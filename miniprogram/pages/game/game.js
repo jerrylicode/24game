@@ -7,6 +7,7 @@
    注意：Fraction 对象不能进 setData，逻辑数据留在 this.cards
    ========================================================= */
 const G24 = require('../../utils/g24.js');
+const Progress = require('../../utils/progress.js');
 
 const F = G24.Fraction;
 const Solver = G24.Solver;
@@ -30,6 +31,8 @@ Page({
     pending: null,
     status: 'playing',
     levelName: '',
+    tierName: '',
+    isLast: false,
     expr: '',
     solCount: 0,
     topPad: 24,
@@ -37,7 +40,7 @@ Page({
     dead: false,
   },
 
-  onLoad() {
+  onLoad(options) {
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
     this.ww = info.windowWidth;
     const cardSize = Math.min(88, Math.floor((this.ww - 64 - GAP * 3) / 4));
@@ -46,17 +49,23 @@ Page({
       topPad: (info.statusBarHeight || 20) + 16,
       boardH: Math.round(cardSize * 2.4),
     });
-    this.loadLevel(0);
+    // 从关卡地图点进来会带 ?level=全局索引；直接打开则从第一关开始
+    const gi = Number(options && options.level);
+    const valid = Number.isInteger(gi) && gi >= 0 && gi < LEVELS.levels.length;
+    this.loadLevel(valid ? gi : 0);
   },
 
   /* ---------- 关卡 ---------- */
 
   loadLevel(index) {
     const lv = LEVELS.levels[index];
+    const tier = LEVELS.tiers[lv.t] || { name: '' };
     this.levelIndex = index;
     this.rule = { integerOnly: lv.r === 'int' };
     this.setData({
       levelName: `第 ${index + 1} 关`,
+      tierName: tier.name,
+      isLast: index === LEVELS.levels.length - 1,
       status: 'playing',
       expr: '',
       pending: null,
@@ -180,6 +189,7 @@ Page({
   judge(list) {
     if (list.length === 1) {
       const ok = list[0].v.eq(F.of(24));
+      if (ok) Progress.markCleared(this.levelIndex); // 进度只前进不后退
       this.setData({ status: ok ? 'win' : 'lose' });
       if (ok && wx.vibrateShort) wx.vibrateShort({ type: 'heavy' });
       return;
@@ -195,7 +205,18 @@ Page({
   },
 
   nextLevel() {
-    this.loadLevel((this.levelIndex + 1) % LEVELS.levels.length);
+    const next = this.levelIndex + 1;
+    if (next >= LEVELS.levels.length) {
+      this.goBack();
+      return;
+    }
+    this.loadLevel(next);
+  },
+
+  goBack() {
+    wx.navigateBack({
+      fail: () => wx.redirectTo({ url: '/pages/levels/levels' }),
+    });
   },
 
   onShareAppMessage() {

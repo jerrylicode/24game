@@ -1,0 +1,181 @@
+/* =========================================================
+   levels.wxss —— 关卡地图
+   scroll-view 必须给确定高度才能滚动：flex:1 + height:0
+   ========================================================= */
+
+.page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px;
+}
+
+/* ---------- 顶部进度 ---------- */
+
+.head {
+  padding: 4px 4px 14px;
+}
+
+.head__title {
+  font-size: 26px;
+  font-weight: 500;
+  color: #123c31;
+  line-height: 1.2;
+}
+
+.head__sub {
+  font-size: 13px;
+  color: #6b8a80;
+  margin-top: 4px;
+}
+
+.bar {
+  height: 8px;
+  border-radius: 999px;
+  background: #d9ece3;
+  margin-top: 14px;
+  overflow: hidden;
+}
+
+.bar__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #0b8f6d;
+  transition: width 0.4s ease-out;
+}
+
+.head__stat {
+  font-size: 12px;
+  color: #6b8a80;
+  margin-top: 8px;
+}
+
+/* ---------- 档位列表 ---------- */
+
+.list {
+  flex: 1;
+  height: 0;
+}
+
+.tier {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 14px 14px 16px;
+  margin-bottom: 12px;
+  border: 1px solid #e6f0eb;
+}
+
+.tier__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tier__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tier__name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #123c31;
+}
+
+.tier__rule {
+  font-size: 11px;
+  color: #6b8a80;
+  background: #f2fbf7;
+  border: 1px solid #dbe7e1;
+  border-radius: 6px;
+  padding: 1px 6px;
+}
+
+.tier__done {
+  font-size: 12px;
+  color: #8ba79d;
+}
+
+.tier__done.is-full {
+  color: #0b8f6d;
+  font-weight: 500;
+}
+
+.tier__note {
+  font-size: 12px;
+  color: #8ba79d;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+/* ---------- 关卡格子 ---------- */
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.cell {
+  width: calc((100% - 32px) / 5);
+  height: 46px;
+  border-radius: 10px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cell:nth-child(5n) {
+  margin-right: 0;
+}
+
+.cell__n {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* 已通关 */
+.cell--done {
+  background: #0b8f6d;
+}
+
+.cell--done .cell__n {
+  color: #ffffff;
+}
+
+/* 当前关：珊瑚描边 + 呼吸 */
+.cell--current {
+  background: #ffffff;
+  border: 1.5px solid #ff7a6b;
+  animation: breathe 1.6s ease-in-out infinite;
+}
+
+.cell--current .cell__n {
+  color: #d33b2c;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+/* 未解锁 */
+.cell--lock {
+  background: #f4f8f6;
+}
+
+.cell--lock .cell__n {
+  color: #b8ccc4;
+}
+
+/* ---------- 底部 ---------- */
+
+.foot {
+  text-align: center;
+  font-size: 12px;
+  color: #a8c0b7;
+  padding: 8px 0 28px;
+}

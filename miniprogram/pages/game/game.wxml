@@ -3,9 +3,10 @@
 <view class="stage" style="padding-top:{{topPad}}px">
 
   <view class="hud">
+    <view class="hud__back" bindtap="goBack">‹</view>
     <view class="hud__info">
       <text class="hud__level">{{levelName}}</text>
-      <text class="hud__sol">这题 {{solCount}} 种解法</text>
+      <text class="hud__sol">{{tierName}} · 这题 {{solCount}} 种解法</text>
     </view>
     <view class="hud__retry" bindtap="retry">重来</view>
   </view>
@@ -71,7 +72,7 @@
       <view class="panel__expr">{{expr}}</view>
       <view class="panel__row">
         <view class="btn btn--ghost" bindtap="retry">再来一次</view>
-        <view class="btn" bindtap="nextLevel">下一关</view>
+        <view class="btn" bindtap="nextLevel">{{isLast ? '回到地图' : '下一关'}}</view>
       </view>
     </view>
   </view>

@@ -20,9 +20,24 @@
   padding: 8px 4px 0;
 }
 
+.hud__back {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid #dbe7e1;
+  color: #0b8f6d;
+  font-size: 22px;
+  line-height: 30px;
+  text-align: center;
+  margin-right: 10px;
+}
+
 .hud__info {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 0;
 }
 
 .hud__level {
