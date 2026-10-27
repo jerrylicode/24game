@@ -1,0 +1,28 @@
+{
+  "description": "24Game 微信小程序版（demo）",
+  "appid": "touristappid",
+  "compileType": "miniprogram",
+  "libVersion": "3.5.0",
+  "projectname": "24game-miniprogram",
+  "setting": {
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": false,
+    "urlCheck": false,
+    "coverView": true,
+    "lazyloadPlaceholderEnable": false,
+    "skylineRenderEnable": false,
+    "ignoreDevUnusedFiles": false
+  },
+  "condition": {},
+  "packOptions": {
+    "ignore": [
+      {
+        "type": "folder",
+        "value": "test"
+      }
+    ],
+    "include": []
+  }
+}

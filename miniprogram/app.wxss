@@ -1,0 +1,11 @@
+/* 全局：沿用 H5 版的薄荷底 + 白牌配色 */
+page {
+  background: #eaf8f2;
+  color: #123c31;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+view, text {
+  box-sizing: border-box;
+}

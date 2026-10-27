@@ -1,0 +1,79 @@
+<wxs src="../../wxs/drag.wxs" module="drag" />
+
+<view class="stage" style="padding-top:{{topPad}}px">
+
+  <view class="hud">
+    <view class="hud__info">
+      <text class="hud__level">{{levelName}}</text>
+      <text class="hud__sol">这题 {{solCount}} 种解法</text>
+    </view>
+    <view class="hud__retry" bindtap="retry">重来</view>
+  </view>
+
+  <view class="tip">把一张牌拖到另一张牌上，松手后选运算符</view>
+
+  <view class="board" style="height:{{boardH}}px">
+    <view
+      wx:for="{{cards}}"
+      wx:key="id"
+      class="slot"
+      style="left:{{item.x}}px;top:{{item.y}}px;width:{{cardSize}}px;height:{{cardSize}}px"
+    >
+      <view
+        class="card {{item.disp.length > 2 ? 'card--sm' : ''}}"
+        id="card-{{index}}"
+        data-idx="{{index}}"
+        bindtouchstart="{{drag.start}}"
+        bindtouchmove="{{drag.move}}"
+        bindtouchend="{{drag.end}}"
+        bindtouchcancel="{{drag.end}}"
+      >
+        <text class="card__num">{{item.disp}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="expr" wx:if="{{expr}}">{{expr}}</view>
+
+  <view class="dead" wx:if="{{dead && status === 'playing'}}">
+    <text class="dead__txt">剩下的牌凑不出 24 了</text>
+    <text class="dead__btn" bindtap="retry">重来</text>
+  </view>
+
+  <!-- 运算符面板 -->
+  <view class="mask" wx:if="{{pending}}" bindtap="cancelPending">
+    <view class="panel" catchtap="noop">
+      <view class="panel__head">
+        <text class="chip">{{pending.fromDisp}}</text>
+        <text class="panel__q">?</text>
+        <text class="chip">{{pending.toDisp}}</text>
+      </view>
+      <view class="panel__hint">选一个运算符</view>
+      <view class="panel__row">
+        <view
+          wx:for="{{ops}}"
+          wx:key="key"
+          class="opbtn"
+          data-key="{{item.key}}"
+          bindtap="applyOp"
+        >{{item.sym}}</view>
+      </view>
+      <view class="panel__cancel" bindtap="cancelPending">取消</view>
+    </view>
+  </view>
+
+  <!-- 结果面板 -->
+  <view class="mask" wx:if="{{status !== 'playing'}}">
+    <view class="panel">
+      <view class="panel__title {{status === 'win' ? 'is-win' : 'is-lose'}}">
+        {{status === 'win' ? '24 点达成' : '没凑成 24'}}
+      </view>
+      <view class="panel__expr">{{expr}}</view>
+      <view class="panel__row">
+        <view class="btn btn--ghost" bindtap="retry">再来一次</view>
+        <view class="btn" bindtap="nextLevel">下一关</view>
+      </view>
+    </view>
+  </view>
+
+</view>
