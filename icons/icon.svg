@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="24Game">
+  <defs>
+    <radialGradient id="bg" cx="42%" cy="34%" r="85%">
+      <stop offset="0%" stop-color="#9cf6da"/>
+      <stop offset="100%" stop-color="#12b98a"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="158" y="96" width="208" height="295" rx="27" fill="#0b8f6d" opacity=".34"/>
+  <rect x="152" y="86" width="208" height="295" rx="27" fill="#ffffff"/>
+  <rect x="160" y="98" width="192" height="272" rx="20" fill="#eaf7f1"/>
+  <circle cx="192" cy="136" r="11" fill="#d0342e"/>
+  <circle cx="320" cy="332" r="11" fill="#22303a"/>
+  <text x="256" y="268" text-anchor="middle" dominant-baseline="middle"
+        font-family="-apple-system, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif"
+        font-size="132" font-weight="900" fill="#0b2a21" letter-spacing="-4">24</text>
+</svg>

@@ -1,0 +1,8 @@
+# 自检产物（无头 Chrome 的 DOM 抓取、临时 profile）
+.shots/
+
+# 系统 / 编辑器杂物
+.DS_Store
+Thumbs.db
+*.log
+node_modules/

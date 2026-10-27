@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<!-- H5：viewport-fit=cover 适配刘海屏；user-scalable=no 防止双指缩放毁掉拖拽手感；
+     interactive-widget 让软键盘弹出时只缩视口、不挤压布局 -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
+<meta name="theme-color" content="#eaf8f2" />
+<meta name="color-scheme" content="dark" />
+<meta name="format-detection" content="telephone=no, email=no, address=no" />
+<!-- 添加到主屏后全屏运行（iOS / Android / 部分国产浏览器） -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="24Game" />
+<meta name="x5-fullscreen" content="true" />
+<meta name="x5-page-mode" content="app" />
+<meta name="screen-orientation" content="portrait" />
+<meta name="description" content="拖一张牌到另一张牌上，自动弹出运算符面板，选完合成新牌 —— 把 4 张牌合到只剩 1 张且结果为 24。" />
+<!-- 分享卡片（微信/QQ/浏览器分享预览；正式部署时把 og:image 换成绝对地址更稳） -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="24Game" />
+<meta property="og:title" content="24Game · 拖拽合成" />
+<meta property="og:description" content="拖一张牌到另一张牌上，弹出运算符直接合成 —— 把 4 张牌合成 24 点。" />
+<meta property="og:image" content="icons/share-1200x630.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="24Game · 拖拽合成" />
+<meta name="twitter:description" content="拖两张牌合成，把 4 张牌凑成 24 点。15 档 300 关，手机上也能玩。" />
+<meta name="twitter:image" content="icons/share-1200x630.png" />
+<title>24Game · 拖拽合成</title>
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="app" id="app">
+
+  <header class="topbar">
+    <div class="topbar__row">
+      <div class="brand">
+        <!-- 品牌砖：一整块糖砖，左半薄荷写 24、右半珊瑚写 Game（icons/logo.svg） -->
+        <img class="brand__logo" src="icons/logo.svg" width="122" height="46" alt="24Game" />
+      </div>
+
+      <div class="tools" role="toolbar" aria-label="设置">
+        <button class="tool tool--sm" id="soundBtn" aria-pressed="true" aria-label="音效" title="音效开关">
+          <svg class="icon i-on" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 9.5v5h3.4L13 19V5L7.4 9.5H4Z" fill="currentColor" stroke="none"/>
+            <path d="M16.4 9.2a4.2 4.2 0 0 1 0 5.6"/><path d="M19 6.6a7.6 7.6 0 0 1 0 10.8"/>
+          </svg>
+          <svg class="icon i-off" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 9.5v5h3.4L13 19V5L7.4 9.5H4Z" fill="currentColor" stroke="none"/>
+            <path d="m16.6 9.4 4.8 5.2"/><path d="M21.4 9.4l-4.8 5.2"/>
+          </svg>
+          <span class="tool__cap">音效</span>
+        </button>
+
+        <button class="tool tool--sm" id="shareBtn" aria-label="分享" title="分享给朋友">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3.5v10"/><path d="m8 7.5 4-4 4 4"/>
+            <path d="M6.5 12v6.5a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2V12"/>
+          </svg>
+          <span class="tool__cap">分享</span>
+        </button>
+
+        <button class="tool tool--sm" id="installBtn" hidden aria-label="安装" title="安装到桌面，离线也能玩">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3.5v9"/><path d="m7.5 8.5 4.5 4.5 4.5-4.5"/>
+            <path d="M4.5 15v3.5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V15"/>
+          </svg>
+          <span class="tool__cap">安装</span>
+        </button>
+
+        <button class="tool tool--sm" id="helpBtn" aria-label="怎么玩" title="玩法说明">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="8.6"/>
+            <path d="M9.6 9.4a2.5 2.5 0 1 1 3.9 2.1c-.9.6-1.5 1.2-1.5 2.3"/><path d="M12 17.2h.01"/>
+          </svg>
+          <span class="tool__cap">说明</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 记分牌：一个整条 HUD，每格只有图标 + 数字 -->
+    <div class="stats" role="status" aria-live="off">
+      <button class="stat stat--level" id="levelBtn" aria-label="关卡地图" title="点开看全部 300 关">
+        <svg class="hud__ico" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5.5 21V3.5"/><path d="M5.5 4.5h11.2l-1.7 3.6 1.7 3.6H5.5"/>
+        </svg>
+        <b id="level">1</b>
+        <span class="stat__tier" id="tierName">幼儿园</span>
+      </button>
+      <div class="stat" aria-label="用时" title="本回合用时">
+        <svg class="hud__ico" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="8.6"/><path d="M12 7.2V12l3.2 2"/>
+        </svg>
+        <b id="timer">00:00</b>
+      </div>
+      <div class="stat" aria-label="步数" title="合成次数">
+        <svg class="hud__ico" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3.5 20h4v-4.5h4.5V11h4.5V6.5h4"/>
+        </svg>
+        <b id="moves">0</b>
+      </div>
+      <div class="stat stat--best" aria-label="最佳" title="本难度最佳用时">
+        <svg class="hud__ico" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M8 3.5h8v5.2a4 4 0 0 1-8 0z"/>
+          <path d="M8 5H5.2v1.4A3.2 3.2 0 0 0 8.4 9.6"/><path d="M16 5h2.8v1.4a3.2 3.2 0 0 1-3.2 3.2"/>
+          <path d="M12 12.7v3.4"/><path d="M9.3 20.5h5.4"/><path d="M10.2 16.1h3.6v4.4h-3.6z"/>
+        </svg>
+        <b id="best">--:--</b>
+      </div>
+    </div>
+  </header>
+
+  <main class="table" id="table">
+    <div class="table__felt" aria-hidden="true"></div>
+    <div class="table__vignette" aria-hidden="true"></div>
+
+    <div class="board" id="board" aria-label="卡牌区"></div>
+
+    <div class="banner" id="banner" role="status" hidden>
+      <span class="banner__icon" id="bannerIcon">💡</span>
+      <span class="banner__text" id="bannerText"></span>
+      <button class="banner__action" id="bannerAction" hidden>撤销</button>
+    </div>
+
+    <div class="ghost-target" id="ghostTarget" aria-hidden="true"></div>
+  </main>
+
+  <footer class="actions" aria-label="操作">
+    <button id="undoBtn" class="tool" title="撤销上一步" aria-label="撤销" disabled>
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M9 14 4 9l5-5"/><path d="M4 9h9.5A5.5 5.5 0 0 1 19 14.5 5.5 5.5 0 0 1 13.5 20H11"/>
+      </svg>
+      <span class="tool__cap">撤销</span>
+    </button>
+    <button id="restartBtn" class="tool" title="重开本回合（同一副牌）" aria-label="重开本回合">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3.6 12a8.4 8.4 0 1 0 2.5-6"/><path d="M3.6 3.9V9h5.1"/>
+      </svg>
+      <span class="tool__cap">重开</span>
+    </button>
+    <button id="mapBtn" class="tool tool--hero" title="关卡地图：15 档 300 关" aria-label="关卡地图">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 6.6 9.4 4.4 14.6 6.6 20 4.4v13l-5.4 2.2-5.2-2.2L4 19.6z"/>
+        <path d="M9.4 4.4v13"/><path d="M14.6 6.6v13"/>
+      </svg>
+      <span class="tool__cap">关卡</span>
+    </button>
+    <button id="hintBtn" class="tool" title="提示可合成的两张牌" aria-label="提示">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M9.2 18h5.6"/><path d="M10.4 21h3.2"/>
+        <path d="M12 3a5.6 5.6 0 0 0-3.2 10.2c.5.4.8.9.8 1.5V16h4.8v-1.3c0-.6.3-1.1.8-1.5A5.6 5.6 0 0 0 12 3Z"/>
+      </svg>
+      <span class="tool__cap">提示</span>
+    </button>
+    <button id="solveBtn" class="tool" title="查看全部解法" aria-label="查看答案">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 6.5h9"/><path d="M4 12h9"/><path d="M4 17.5h5.5"/><path d="m15.4 17 2 2 3.7-4.2"/>
+      </svg>
+      <span class="tool__cap">答案</span>
+    </button>
+  </footer>
+
+  <!-- 横屏空间不足时的引导条（触摸设备 + 横屏 + 视口很矮才出现） -->
+  <div class="rotate-hint" id="rotateHint" role="status" hidden>
+    <span class="rotate-hint__phone" aria-hidden="true">📱</span>
+    <div class="rotate-hint__body">
+      <b>横屏空间有点挤</b>
+      <span>转回竖屏，牌面更大更好拖</span>
+    </div>
+    <button class="btn btn--sm" id="rotateHintOk">知道了</button>
+    <button class="rotate-hint__never" id="rotateHintNever">不再提示</button>
+  </div>
+</div>
+
+<!-- 微信内分享引导：指向右上角“···” -->
+<div class="share-guide" id="shareGuide" hidden>
+  <div class="share-guide__arrow" aria-hidden="true">
+    <svg viewBox="0 0 120 90" width="120" height="90">
+      <path d="M10 84 C 46 70, 78 52, 96 14" fill="none" stroke="#f4c260" stroke-width="5"
+            stroke-linecap="round" stroke-dasharray="2 14" />
+      <path d="M96 14 l -20 6 l 12 12 z" fill="#f4c260" />
+    </svg>
+  </div>
+  <div class="share-guide__text">
+    <b>点右上角 ···</b>
+    <span>把「24Game」分享给朋友，看看谁先凑出 24</span>
+  </div>
+  <button class="btn btn--sm" id="shareGuideOk">我知道了</button>
+</div>
+
+<!-- 运算符圆环：两张牌一合上，就在它们的中点展开一圈（参考 Filee 的格式圆环）。
+     只有 4 个运算符 + 取消，不显示任何计算结果 -->
+<div class="op-ring" id="opRing" role="dialog" aria-modal="true" aria-label="选择运算符" hidden>
+  <div class="op-ring__scrim" id="ringScrim"></div>
+  <div class="op-ring__hub" id="ringHub">
+    <span class="op-ring__halo" aria-hidden="true"></span>
+    <button class="op-ring__item" type="button" data-op="+" aria-label="加">+</button>
+    <button class="op-ring__item" type="button" data-op="-" aria-label="减">−</button>
+    <button class="op-ring__item" type="button" data-op="*" aria-label="乘">×</button>
+    <button class="op-ring__item" type="button" data-op="/" aria-label="除">÷</button>
+    <button class="op-ring__cancel" type="button" id="ringCancel" aria-label="取消这次合成" title="取消">
+      <!-- 取消用「回退箭头」：箭头 + 向右绕下去的弯钩，比 ✕ 更像“退回去重来” -->
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M9 14.5 4 9.5l5-5"/>
+        <path d="M4 9.5h10.2a5.8 5.8 0 0 1 0 11.6H9.5"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- 特效层 / 连击文字 / 粒子 -->
+<div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
+
+<!-- 各种弹层 -->
+<!-- 关卡地图：15 档手风琴，每档 20 关 -->
+<div class="modal" id="levelModal" hidden>
+  <div class="modal__card modal__card--levels">
+    <div class="lvm__head">
+      <h2 class="modal__title">闯关</h2>
+      <span class="lvm__progress" id="levelProgress">0 / 300</span>
+      <button class="lvm__close" type="button" data-close="levelModal" aria-label="关闭" title="关闭">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6.5 6.5 11 11"/><path d="m17.5 6.5-11 11"/></svg>
+      </button>
+    </div>
+
+    <!-- 档位标签条：横向可滚，点一下直接跳档 -->
+    <div class="lvm__tabs" id="levelTabs" role="tablist" aria-label="档位"></div>
+
+    <!-- 档位页：左右滑动切换，每页 20 关 -->
+    <div class="lvm__pager" id="levelPager"></div>
+
+    <div class="lvm__foot">
+      <button class="lvm__arrow" id="levelPrev" aria-label="上一档" title="上一档">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6-6 6 6 6"/></svg>
+      </button>
+      <span class="lvm__foot-note" id="levelFoot">左右滑动切换档位 · 点格子进关</span>
+      <button class="lvm__arrow" id="levelNext" aria-label="下一档" title="下一档">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg>
+      </button>
+    </div>
+
+    <div class="modal__actions">
+      <button class="btn btn--primary" data-close="levelModal">继续挑战</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="helpModal" hidden>
+  <div class="modal__card">
+    <h2 class="modal__title">怎么玩</h2>
+    <ol class="howto">
+      <li><b>拖动</b>一张牌，松手落到另一张牌上（牌会发光提示可落下）</li>
+      <li>两张牌一合上，就在它们<b>中点弹出一圈运算符</b>，选 <b>+ − × ÷</b></li>
+      <li><b>合成</b>出一张新牌（牌面只显示得数），原来两张牌合并消失</li>
+      <li>把 4 张牌合到只剩 1 张，且结果为 <b>24</b>，即获胜</li>
+      <li>闯关模式：<b>15 档 × 20 关 = 300 关</b>，从「幼儿园」一路打到「数学之王」</li>
+    </ol>
+    <p class="howto__tip"><b>按住牌拖动</b>，松手前留意哪张牌在发光，松手就算落在它身上；也可以<b>依次点两张牌</b>。</p>
+    <p class="howto__tip">想反过来算（比如 <b>5 − 7</b>），把另一张牌拖过去就行。卡住了点「<b>提示</b>」或「<b>答案</b>」。</p>
+    <div class="rule-row">
+      <svg class="icon rule-row__ico" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3.4" y="8.6" width="17.2" height="6.8" rx="1.6"/>
+        <path d="M7.2 8.6v3"/><path d="M11 8.6v4.4"/><path d="M14.8 8.6v3"/><path d="M18.6 8.6v4.4"/>
+      </svg>
+      <span class="rule-row__text"><b>整数中间值</b><small>每一步都必须是整数，更难</small></span>
+      <button class="switch" id="ruleBtn" role="switch" aria-checked="false" aria-label="整数中间值"><span class="switch__knob"></span></button>
+    </div>
+    <div class="modal__actions">
+      <button class="btn btn--primary" data-close="helpModal">明白了</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="answerModal" hidden>
+  <div class="modal__card">
+    <div class="mhd">
+      <h2 class="modal__title">解法</h2>
+      <button class="modal__close" type="button" data-close="answerModal" aria-label="关闭" title="关闭">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6.5 6.5 11 11"/><path d="m17.5 6.5-11 11"/></svg>
+      </button>
+    </div>
+    <div class="answer-list" id="answerList"></div>
+    <p class="howto__tip" id="answerNote"></p>
+    <div class="modal__actions">
+      <button class="btn btn--primary" id="demoBtn">▶ 自动演示</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="winModal" hidden>
+  <div class="modal__card modal__card--win">
+    <div class="win-badge">24</div>
+    <h2 class="modal__title" id="winTitle">合成成功！</h2>
+    <!-- 合成成功只留结果：没有算式，只有成绩 -->
+    <div class="win-stats" id="winStats"></div>
+    <div class="modal__actions">
+      <button class="btn btn--primary" id="winNext">下一关 →</button>
+      <button class="btn" data-close="winModal">看看牌面</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="loseModal" hidden>
+  <div class="modal__card">
+    <h2 class="modal__title">没凑到 24</h2>
+    <!-- 只给结论，不给算式：一张大牌面 + “≠ 24”，没有半句解释 -->
+    <div class="lose-verdict">
+      <b class="lose-verdict__num" id="loseValue">21</b>
+      <span class="lose-verdict__neq">≠ 24</span>
+    </div>
+    <div class="modal__actions">
+      <button class="btn btn--primary" id="loseUndo">↩︎ 撤销</button>
+      <button class="btn" id="loseRestart">↺ 重开本关</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/h5.js"></script>
+<script src="js/fraction.js"></script>
+<script src="js/solver.js"></script>
+<script src="js/levels.js"></script>
+<script src="js/dealer.js"></script>
+<script src="js/sfx.js"></script>
+<script src="js/fx.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

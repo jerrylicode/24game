@@ -1,0 +1,28 @@
+{
+  "name": "24game",
+  "version": "2.0.0",
+  "private": true,
+  "description": "24Game（H5 版）：拖动一张牌到另一张牌上弹出运算符，合成新牌；15 档 × 20 关闯关模式，零依赖、手机浏览器可直接玩",
+  "scripts": {
+    "test": "node test/logic.test.mjs && node test/sfx.test.mjs && node test/h5.test.mjs && node test/layout.test.mjs && node test/levels.test.mjs && node test/pwa.test.mjs",
+    "selfcheck": "node tools/selfcheck.mjs",
+    "selfcheck:h5": "node tools/selfcheck.mjs h5",
+    "selfcheck:core": "node tools/selfcheck.mjs core",
+    "selfcheck:pwa": "node tools/selfcheck.mjs pwa",
+    "icons": "node tools/make-icons.mjs",
+    "dom": "node tools/dom-check.mjs",
+    "serve": "node tools/serve.mjs 8123",
+    "test:input": "node tools/input-check.mjs",
+    "check": "npm test && npm run selfcheck && npm run test:input",
+    "levels": "node tools/make-levels.mjs"
+  },
+  "keywords": [
+    "24点",
+    "game",
+    "levels",
+    "drag-and-drop",
+    "web-audio",
+    "web-animations"
+  ],
+  "license": "MIT"
+}
