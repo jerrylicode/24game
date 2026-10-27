@@ -29,6 +29,8 @@ function start(e, ownerInstance) {
     'z-index': 30,
     'box-shadow': '0 14px 28px rgba(15, 110, 86, 0.22)'
   });
+  /* 拿起音效得在逻辑层播，这里跨层通知一次（每次拖拽只有这一下） */
+  ownerInstance.callMethod('onGrab', { idx: e.currentTarget.dataset.idx });
 }
 
 function move(e, ownerInstance) {

@@ -8,6 +8,8 @@
    ========================================================= */
 const G24 = require('../../utils/g24.js');
 const Progress = require('../../utils/progress.js');
+const Sfx = require('../../utils/sfx.js');
+const Fx = require('../../utils/fx.js');
 
 const F = G24.Fraction;
 const Solver = G24.Solver;
@@ -38,6 +40,7 @@ Page({
     topPad: 24,
     boardH: 300,
     dead: false,
+    shaking: false,
   },
 
   onLoad(options) {
@@ -53,6 +56,54 @@ Page({
     const gi = Number(options && options.level);
     const valid = Number.isInteger(gi) && gi >= 0 && gi < LEVELS.levels.length;
     this.loadLevel(valid ? gi : 0);
+  },
+
+  onReady() {
+    // canvas 节点要等渲染完成才拿得到，onReady 是最早时机。
+    // 顺便量一次牌桌位置：canvas 是全屏坐标系，粒子要画在牌的屏幕位置上
+    wx.createSelectorQuery()
+      .select('#fxCanvas')
+      .fields({ node: true, size: true })
+      .select('.board')
+      .boundingClientRect()
+      .exec((res) => {
+        const c = res && res[0];
+        const br = res && res[1];
+        if (br) this.boardRect = { left: br.left, top: br.top };
+        if (!c || !c.node) return;
+        const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
+        const dpr = info.pixelRatio || 2;
+        const canvas = c.node;
+        canvas.width = c.width * dpr;
+        canvas.height = c.height * dpr;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+        Fx.attach(canvas, ctx, c.width, c.height);
+      });
+  },
+
+  onUnload() {
+    Fx.detach();
+  },
+
+  /** 牌中心在屏幕坐标系里的位置 */
+  centerOf(card) {
+    const r = this.boardRect || { left: 0, top: 0 };
+    const s = this.data.cardSize;
+    return { x: r.left + card.x + s / 2, y: r.top + card.y + s / 2 };
+  },
+
+  /** 轻微震动（非法操作 / 死局） */
+  shake() {
+    if (this.data.shaking) return;
+    this.setData({ shaking: true });
+    setTimeout(() => this.setData({ shaking: false }), 420);
+  },
+
+  /** WXS 按下牌时回调：解锁音频 + 拿起音效 */
+  onGrab() {
+    Sfx.unlock();
+    Sfx.pickup();
   },
 
   /* ---------- 关卡 ---------- */
@@ -76,7 +127,9 @@ Page({
       const f = F.of(v);
       return { id: `c${index}_${k}`, v: f, disp: f.toDisplay() };
     });
+    Fx.clear();
     this.layout(cards);
+    Sfx.deal();
   },
 
   /* ---------- 布局：牌排成一行居中 ---------- */
@@ -128,9 +181,18 @@ Page({
         hit = k;
       }
     });
-    if (hit < 0) return;
+    if (hit < 0) {
+      Sfx.release();
+      return;
+    }
 
     if (wx.vibrateShort) wx.vibrateShort({ type: 'light' });
+    Sfx.snap();
+    Sfx.popupOpen();
+    const target = cards[hit];
+    const tc = this.centerOf(target);
+    Fx.ring(tc.x, tc.y, { size: this.data.cardSize * 1.1 });
+
     this.setData({
       pending: {
         from: i,
@@ -160,11 +222,15 @@ Page({
       text = `${a.v.toDisplay()} ${op.sym} ${b.v.toDisplay()} = ${res.toDisplay()}`;
     } catch (err) {
       wx.showToast({ title: '这一步算不了', icon: 'none' });
+      Sfx.invalid();
+      this.shake();
       return;
     }
 
     if (this.rule.integerOnly && !res.isInteger()) {
       wx.showToast({ title: '本关只许整数', icon: 'none' });
+      Sfx.invalid();
+      this.shake();
       return;
     }
 
@@ -173,12 +239,26 @@ Page({
     // 插回被合并的靠前位置，新牌不会视觉上"跳"到最右边
     rest.splice(Math.min(p.from, p.to), 0, merged);
 
+    // 特效画在两张牌的中点
+    const ca = this.centerOf(a);
+    const cb = this.centerOf(b);
+    const mx = (ca.x + cb.x) / 2;
+    const my = (ca.y + cb.y) / 2;
+
+    Sfx.choose();
+    Sfx.merge();
+    Fx.burst(mx, my);
+    Fx.ring(mx, my, { size: this.data.cardSize * 1.4, color: '#ff7a6b' });
+    Fx.floatText(mx, my - 8, text, { size: text.length > 12 ? 15 : 18 });
+    setTimeout(() => Sfx.spawn(), 120); // 新牌弹出时再补一声
+
     this.setData({ pending: null, expr: text });
     this.layout(rest);
     this.judge(rest);
   },
 
   cancelPending() {
+    Sfx.popupClose();
     this.setData({ pending: null });
   },
 
@@ -189,14 +269,25 @@ Page({
   judge(list) {
     if (list.length === 1) {
       const ok = list[0].v.eq(F.of(24));
-      if (ok) Progress.markCleared(this.levelIndex); // 进度只前进不后退
+      if (ok) {
+        Progress.markCleared(this.levelIndex); // 进度只前进不后退
+        if (wx.vibrateShort) wx.vibrateShort({ type: 'heavy' });
+        Sfx.win();
+        const c = this.centerOf(list[0]);
+        Fx.confetti({ count: 90 });
+        Fx.stamp(c.x, c.y, '24', { size: 64 });
+      } else {
+        Sfx.dead();
+        this.shake();
+      }
       this.setData({ status: ok ? 'win' : 'lose' });
-      if (ok && wx.vibrateShort) wx.vibrateShort({ type: 'heavy' });
       return;
     }
     // 剩下的牌无论怎么合都到不了 24，提前告诉玩家别白试
     if (!Solver.isSolvable(list.map((c) => c.v), this.rule)) {
       this.setData({ dead: true });
+      Sfx.dead();
+      this.shake();
     }
   },
 

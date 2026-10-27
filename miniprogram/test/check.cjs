@@ -63,6 +63,8 @@ function loadPage(file) {
 
 const G24 = require(path.join(ROOT, 'utils/g24.js'));
 const Progress = require(path.join(ROOT, 'utils/progress.js'));
+const Sfx = require(path.join(ROOT, 'utils/sfx.js'));
+const Fx = require(path.join(ROOT, 'utils/fx.js'));
 
 /* =========================================================
    1. 进度存储
@@ -217,7 +219,109 @@ ok(frac.toDisplay() === '8/3', '分数牌面展示为 8/3');
 ok(frac.toDisplay().length > 2, '分数会切小字号（阈值 3 字符）');
 
 /* =========================================================
-   4. WXS 拖拽
+   4. 音效：拿不到 WebAudio 上下文时必须静默降级
+   ========================================================= */
+section('音效降级');
+// 测试环境没有 wx.createWebAudioContext，等同于基础库 < 2.19.0
+const ctxOrNull = Sfx.init();
+ok(ctxOrNull === null, '没有 WebAudio 时 init 返回 null');
+ok(Sfx.enabled === false, '自动关掉音效，不抛异常');
+let sfxCrashed = false;
+try {
+  Sfx.pickup();
+  Sfx.merge();
+  Sfx.win();
+  Sfx.deal();
+  Sfx.invalid();
+  Sfx.unlock();
+  Sfx.setEnabled(true);
+} catch (e) {
+  sfxCrashed = true;
+}
+ok(!sfxCrashed, '所有音效方法在降级状态下调用都不崩');
+
+/* =========================================================
+   5. 粒子系统：canvas 驱动
+   ========================================================= */
+section('粒子系统');
+
+function makeCanvasEnv() {
+  const ops = [];
+  const ctx = new Proxy({}, {
+    get(target, key) {
+      if (key === 'canvas') return null;
+      return (typeof key === 'string' && key.startsWith('_')) ? undefined : (...args) => { ops.push(key); };
+    },
+    set() { return true; },
+  });
+  const canvas = { requestAnimationFrame: () => 1, cancelAnimationFrame: () => {} };
+  return { ctx, canvas, ops };
+}
+
+{
+  const env = makeCanvasEnv();
+  ok(Fx.ready() === false, 'attach 之前不工作');
+  Fx.burst(10, 10, { count: 5 });
+  ok(Fx.parts.length === 0, 'attach 之前的调用被安全忽略');
+
+  Fx.attach(env.canvas, env.ctx, 375, 812);
+  ok(Fx.ready() === true, 'attach 之后就绪');
+
+  Fx.burst(100, 100, { count: 10 });
+  ok(Fx.parts.length === 10, 'burst 生成 10 个粒子', Fx.parts.length);
+  ok(Fx.parts.every((p) => p.kind === 'dot'), 'burst 生成的是 dot 粒子');
+  ok(Fx.running === true, '有粒子时循环自动启动');
+
+  Fx.ring(50, 50, { size: 60 });
+  ok(Fx.parts.length === 11 && Fx.parts[10].kind === 'ring', 'ring 追加一个光环粒子');
+
+  Fx.floatText(80, 80, '1 + 2 = 3');
+  const txt = Fx.parts[Fx.parts.length - 1];
+  ok(txt.kind === 'text' && txt.text === '1 + 2 = 3', 'floatText 带上了算式文本');
+
+  Fx.stamp(80, 80, '24');
+  ok(Fx.parts[Fx.parts.length - 1].kind === 'stamp', 'stamp 生成盖章粒子');
+
+  // 画一帧，确认不报错
+  let drawCrashed = false;
+  try { Fx._loop(); } catch (e) { drawCrashed = true; }
+  ok(!drawCrashed, '渲染一帧不报错');
+  ok(env.ops.includes('clearRect'), '每帧先清空画布');
+}
+
+{
+  // 粒子过期后必须被回收，循环要能停下来
+  const env = makeCanvasEnv();
+  Fx.clear();
+  Fx.attach(env.canvas, env.ctx, 375, 812);
+  Fx.burst(10, 10, { count: 3 });
+  ok(Fx.parts.length === 3, '重新生成 3 个粒子');
+  Fx.parts.forEach((p) => { p.life = -1; });
+  Fx._loop();
+  ok(Fx.parts.length === 0, '寿命耗尽的粒子被回收');
+  ok(Fx.running === false, '粒子清空后循环自动停止（不白耗电）');
+}
+
+{
+  // 彩带的延迟要算进总时长，否则动画会从半路开始
+  const env = makeCanvasEnv();
+  Fx.clear();
+  Fx.attach(env.canvas, env.ctx, 375, 812);
+  Fx.confetti({ count: 6 });
+  ok(Fx.parts.length === 6, 'confetti 生成 6 条彩带');
+  const c = Fx.parts[0];
+  ok(c.kind === 'confetti', '类型正确');
+  ok(Math.abs(c.max - (c.dur + c.delay)) < 1e-9, '总时长 = 下落时长 + 延迟', c.max + ' vs ' + (c.dur + c.delay));
+  ok(c.y0 < 0, '彩带从屏幕上方开始');
+
+  // 延迟没走完时不该画
+  const before = env.ops.length;
+  Fx._loop();
+  ok(Fx.parts.length === 6, '第一帧彩带都还在（延迟中）');
+}
+
+/* =========================================================
+   6. WXS 拖拽
    ========================================================= */
 section('WXS 拖拽');
 
@@ -244,6 +348,7 @@ function makeEnv() {
   ok(env.state.sx === 100 && env.state.sy === 200, 'start 记下起始坐标');
   ok(env.state.moved === false, 'start 重置 moved');
   ok(env.styles[0] && env.styles[0].transition === 'none', 'start 关掉过渡');
+  ok(env.calls.length === 1 && env.calls[0].name === 'onGrab', 'start 通知逻辑层播拿起音');
 }
 
 {
@@ -267,9 +372,9 @@ function makeEnv() {
   drag.start({ instance: env.el, touches: [{ clientX: 100, clientY: 200 }], currentTarget: { dataset: { idx: 2 } } }, env.owner);
   drag.move({ instance: env.el, touches: [{ clientX: 140, clientY: 210 }], currentTarget: { dataset: { idx: 2 } } }, env.owner);
   drag.end({ instance: env.el, changedTouches: [{ clientX: 140, clientY: 210 }], currentTarget: { dataset: { idx: 2 } } }, env.owner);
-  ok(env.calls.length === 1, 'end 调了一次 callMethod');
-  ok(env.calls[0].name === 'onDrop', '调的是 onDrop');
-  const args = env.calls[0].args;
+  const drops = env.calls.filter((c) => c.name === 'onDrop');
+  ok(drops.length === 1, 'end 调了一次 onDrop');
+  const args = drops[0].args;
   ok(args && typeof args === 'object' && !Array.isArray(args), 'callMethod 只传一个参数对象');
   ok(args.idx === 2 && args.dx === 40 && args.dy === 10, '参数里 idx/dx/dy 都对', JSON.stringify(args));
   ok(env.styles[env.styles.length - 1].transform === 'translate(0px, 0px)', 'end 把 transform 归零');
@@ -280,7 +385,7 @@ function makeEnv() {
   const env = makeEnv();
   drag.start({ instance: env.el, touches: [{ clientX: 100, clientY: 200 }], currentTarget: { dataset: { idx: 0 } } }, env.owner);
   drag.end({ instance: env.el, changedTouches: [{ clientX: 100, clientY: 200 }], currentTarget: { dataset: { idx: 0 } } }, env.owner);
-  ok(env.calls.length === 0, '纯点击（没移动）不触发 onDrop');
+  ok(!env.calls.some((c) => c.name === 'onDrop'), '纯点击（没移动）不触发 onDrop');
 }
 
 {

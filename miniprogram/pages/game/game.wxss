@@ -281,3 +281,30 @@
   color: #0b8f6d;
   border: 1px solid #0b8f6d;
 }
+
+/* ---------- 特效层 ---------- */
+
+/* 全屏画布，只负责画，不接事件 */
+.fx {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 200;
+  pointer-events: none;
+}
+
+/* 非法操作 / 死局时牌桌轻微震一下 */
+.is-shaking {
+  animation: shake 0.42s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-5px); }
+  30% { transform: translateX(5px); }
+  45% { transform: translateX(-4px); }
+  60% { transform: translateX(4px); }
+  80% { transform: translateX(-2px); }
+}

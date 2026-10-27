@@ -1,6 +1,6 @@
 <wxs src="../../wxs/drag.wxs" module="drag" />
 
-<view class="stage" style="padding-top:{{topPad}}px">
+<view class="stage {{shaking ? 'is-shaking' : ''}}" style="padding-top:{{topPad}}px">
 
   <view class="hud">
     <view class="hud__back" bindtap="goBack">‹</view>
@@ -78,3 +78,8 @@
   </view>
 
 </view>
+
+<!-- 特效画布：必须和 .stage 同级。.stage 抖动时会带 transform，
+     fixed 子元素会改以它为基准定位，canvas 就会跟着错位 -->
+<canvas type="2d" id="fxCanvas" class="fx"></canvas>
+
