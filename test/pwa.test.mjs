@@ -332,7 +332,8 @@ test('页面里挂上了 manifest / 图标 / 分享 meta', () => {
   assert.match(html, /<link rel="manifest" href="manifest\.webmanifest"/);
   assert.match(html, /<link rel="apple-touch-icon" href="icons\/apple-touch-icon\.png"/);
   assert.match(html, /<link rel="icon" href="icons\/favicon\.svg"/);
-  assert.match(html, /<meta property="og:image" content="icons\/share-1200x630\.png"/);
+  // og:image 允许相对路径（本地开发）或绝对 URL（部署到 GitHub Pages 后分享抓取更稳）
+  assert.match(html, /<meta property="og:image" content="(?:https?:\/\/[^"]+)?\/?icons\/share-1200x630\.png"/);
   assert.match(html, /<meta name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(html, /<meta name="theme-color"/);
 });
