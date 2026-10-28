@@ -22,8 +22,9 @@ const GAP = 12;          // 牌间距
 const RATIO = 1.42;      // 牌宽高比（H5 版一致）
 const TABLE_PAD = 14;    // 牌桌内边距
 const BOARD_PAD = 10;    // 棋盘内边距
-/* 顶栏内容高度：第一行 44 + 行间距 7 + 记分牌 38 + 底内边距 9 */
-const TOPBAR_H = 98;
+/* 顶栏内容高度（不含状态栏）：导航条 44 + 间距 6 + 记分牌 38
+   + 间距 6 + 工具行 30 + 底内边距 8 —— 必须和 game.wxss 对上 */
+const TOPBAR_H = 132;
 const DOCK_H = 84;       // 底部工具坞高度（不含安全区）
 
 const SUITS = ['♠', '♥', '♦', '♣'];
@@ -51,7 +52,8 @@ Page({
 
     /* 顶栏 / 坞 */
     topPad: 24,
-    capRight: 96,     // 顶栏右侧给微信胶囊让出的宽度
+    toolsTop: 118,    // 工具行上沿：必须 ≥ 胶囊下沿
+    navBottom: 64,    // 胶囊下沿
     bannerBottom: 110,
     soundOn: true,
     levelNo: 1,
@@ -85,12 +87,13 @@ Page({
     const wh = nav.wh;
     const statusBar = nav.statusBar;
     const safeBottom = nav.safeBottom;
-    /* 第一行（招牌 + 工具）和胶囊垂直居中对齐，右侧还要躲开胶囊 */
+    /* 第一行（招牌）和胶囊垂直居中对齐；胶囊右边不放东西 */
     const topPad = Nav.topPad(44);
-    const topbarH = (topPad - statusBar) + TOPBAR_H;
+    /* 顶栏从屏幕顶端算起的实际高度：上内边距 + 内容 */
+    const topbarBottom = topPad + TOPBAR_H;
 
     /* 牌能占多大：宽度够放两张、高度够放两行，取小的那个 */
-    const tableH = Math.max(280, wh - topPad - topbarH - DOCK_H - safeBottom);
+    const tableH = Math.max(280, wh - topbarBottom - DOCK_H - safeBottom);
     const boardW = ww - TABLE_PAD * 2;
     const boardH = tableH - TABLE_PAD * 2;
     const availW = boardW - BOARD_PAD * 2 - GAP;
@@ -106,7 +109,7 @@ Page({
     this.history = [];
     this.selIndex = -1;
     /* 牌桌在屏幕上的位置：先按常量估一个，onReady 再量准 */
-    this.boardRect = { left: TABLE_PAD, top: topPad + topbarH + TABLE_PAD };
+    this.boardRect = { left: TABLE_PAD, top: topbarBottom + TABLE_PAD };
 
     this.setData({
       ww,
@@ -121,8 +124,9 @@ Page({
       padX: Math.max(7, Math.round(cardW * 0.077)),
       padY: Math.max(6, Math.round(cardW * 0.068)),
       topPad,
-      /* 顶栏右侧要给胶囊让出的宽度 */
-      capRight: nav.capRight,
+      /* 工具行的上沿（用来保证它整行都在胶囊下面） */
+      toolsTop: topPad + 44 + 6 + 38 + 6,
+      navBottom: nav.statusBar + nav.navH,
       bannerBottom: DOCK_H + safeBottom + 16,
       soundOn: Sfx.enabled !== false,
     });

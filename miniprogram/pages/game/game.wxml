@@ -4,27 +4,14 @@
   <view class="glow glow--a"></view>
   <view class="glow glow--b"></view>
 
-  <!-- ---------- 顶栏：招牌 + 工具 + 记分牌 ---------- -->
+  <!-- ---------- 顶栏 ----------
+       第一行是导航条：只放招牌，右边整段留给微信胶囊。
+       工具单独一行放在记分牌下面 —— 挤在导航条里迟早被胶囊压住。 -->
   <view class="topbar" style="padding-top:{{topPad}}px">
-    <view class="topbar__row" style="padding-right:{{capRight}}px">
+    <view class="topbar__row">
       <view class="logo" bindtap="goBack">
         <view class="logo__half logo__half--mint"><text class="logo__t">24</text></view>
         <view class="logo__half logo__half--warm"><text class="logo__t logo__t--w">Game</text></view>
-      </view>
-
-      <view class="tools">
-        <view class="tool tool--sm" hover-class="is-press" bindtap="toggleSound">
-          <text class="tool__ico {{soundOn ? '' : 'is-mute'}}">♪</text>
-          <text class="tool__cap">音效</text>
-        </view>
-        <button class="tool tool--sm tool--btn" open-type="share" hover-class="is-press">
-          <text class="tool__ico tool__ico--sky">⤴</text>
-          <text class="tool__cap">分享</text>
-        </button>
-        <view class="tool tool--sm" hover-class="is-press" bindtap="openHelp">
-          <text class="tool__ico tool__ico--dim">?</text>
-          <text class="tool__cap">说明</text>
-        </view>
       </view>
     </view>
 
@@ -45,6 +32,24 @@
       <view class="stat stat--best">
         <text class="stat__ico">★</text>
         <text class="stat__val">{{best}}</text>
+      </view>
+    </view>
+
+    <view class="tools">
+      <view class="tool tool--chip" hover-class="is-press" bindtap="toggleSound">
+        <text class="tool__ico {{soundOn ? '' : 'is-mute'}}">♪</text>
+        <text class="tool__cap">音效</text>
+      </view>
+      <!-- 分享必须是 <button open-type="share">，但它自带一堆盒子样式，
+           所以让它当一层透明的“点击膜”铺满整个胶囊，外观全交给 .tool--chip -->
+      <view class="tool tool--chip" hover-class="is-press">
+        <button class="tool__share" open-type="share"></button>
+        <text class="tool__ico tool__ico--sky">⤴</text>
+        <text class="tool__cap">分享</text>
+      </view>
+      <view class="tool tool--chip" hover-class="is-press" bindtap="openHelp">
+        <text class="tool__ico tool__ico--dim">?</text>
+        <text class="tool__cap">说明</text>
       </view>
     </view>
   </view>

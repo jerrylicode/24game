@@ -233,14 +233,19 @@ const lvHeadRight = 375 - 12 - lvPage.data.capRight; // 页面左右各 24rpx �
 ok(lvHeadRight < capsule.left, '标题行右端落在胶囊左边', lvHeadRight + ' < ' + capsule.left);
 ok(lvHeadRight >= 375 / 2, '右侧留白没把内容挤到左半屏', lvHeadRight);
 
-/* 游戏页：招牌 + 音效/分享/说明 这一行同样要躲开 */
+/* 游戏页：工具不再和胶囊挤同一行，整行挪到胶囊下面 */
 const gpage = loadPage('pages/game/game.js');
 gpage.onLoad({ level: '0' });
-ok(gpage.data.capRight === 94, '游戏页顶栏给胶囊留了宽度', gpage.data.capRight);
-ok(gpage.data.topPad === 45, '游戏页顶栏从状态栏下沿起', gpage.data.topPad);
-const gToolsRight = 375 - 12 - gpage.data.capRight;
-ok(gToolsRight < capsule.left, '顶栏工具右端落在胶囊左边', gToolsRight + ' < ' + capsule.left);
-ok(gpage.data.cardW >= 100, '躲开胶囊后牌没被挤小', gpage.data.cardW);
+ok(gpage.data.topPad === 45, '导航条与胶囊垂直居中', gpage.data.topPad);
+ok(gpage.data.toolsTop >= gpage.data.navBottom, '工具行整行都在胶囊下面',
+  gpage.data.toolsTop + ' >= ' + gpage.data.navBottom);
+ok(gpage.data.cardW >= 140, '加了工具行之后牌还够大', gpage.data.cardW);
+
+/* 结构护栏：第一行里不许再出现工具（不然胶囊一挤又压住了） */
+const gwxml = fs.readFileSync(path.join(ROOT, 'pages/game/game.wxml'), 'utf8');
+const rowBlock = gwxml.slice(gwxml.indexOf('topbar__row'), gwxml.indexOf('class="stats"'));
+ok(rowBlock.indexOf('tools') === -1 && rowBlock.indexOf('tool--chip') === -1,
+  '顶栏第一行只放招牌，不再塞工具');
 
 /* 拿不到胶囊数据时不能崩，也不能把按钮压到胶囊底下 */
 capsuleMode = 'zero';
