@@ -22,9 +22,9 @@ const GAP = 12;          // 牌间距
 const RATIO = 1.42;      // 牌宽高比（H5 版一致）
 const TABLE_PAD = 14;    // 牌桌内边距
 const BOARD_PAD = 10;    // 棋盘内边距
-/* 顶栏内容高度（不含状态栏）：导航条 44 + 间距 6 + 记分牌 38
-   + 间距 6 + 工具行 30 + 底内边距 8 —— 必须和 game.wxss 对上 */
-const TOPBAR_H = 132;
+/* 顶栏内容高度（不含状态栏）：导航条 44 + 间距 6 + 记分牌 38 + 底内边距 8
+   —— 必须和 game.wxss 对上 */
+const TOPBAR_H = 96;
 const DOCK_H = 84;       // 底部工具坞高度（不含安全区）
 
 const SUITS = ['♠', '♥', '♦', '♣'];
@@ -52,8 +52,9 @@ Page({
 
     /* 顶栏 / 坞 */
     topPad: 24,
-    toolsTop: 118,    // 工具行上沿：必须 ≥ 胶囊下沿
-    navBottom: 64,    // 胶囊下沿
+    capRight: 96,     // 顶栏右侧给微信胶囊让出的宽度
+    compact: false,   // 窄屏时工具只留图标
+    rowW: 300,        // 顶栏一行的可用宽度
     bannerBottom: 110,
     soundOn: true,
     levelNo: 1,
@@ -87,10 +88,13 @@ Page({
     const wh = nav.wh;
     const statusBar = nav.statusBar;
     const safeBottom = nav.safeBottom;
-    /* 第一行（招牌）和胶囊垂直居中对齐；胶囊右边不放东西 */
+    /* 第一行（招牌 + 工具）和胶囊垂直居中对齐，右侧还要躲开胶囊 */
     const topPad = Nav.topPad(44);
     /* 顶栏从屏幕顶端算起的实际高度：上内边距 + 内容 */
     const topbarBottom = topPad + TOPBAR_H;
+    /* 这一行扣掉左右内边距和胶囊之后还剩多少；放不下带字的工具就收成纯图标 */
+    const rowW = ww - 24 - nav.capRight;
+    const compact = rowW < 246;
 
     /* 牌能占多大：宽度够放两张、高度够放两行，取小的那个 */
     const tableH = Math.max(280, wh - topbarBottom - DOCK_H - safeBottom);
@@ -124,9 +128,10 @@ Page({
       padX: Math.max(7, Math.round(cardW * 0.077)),
       padY: Math.max(6, Math.round(cardW * 0.068)),
       topPad,
-      /* 工具行的上沿（用来保证它整行都在胶囊下面） */
-      toolsTop: topPad + 44 + 6 + 38 + 6,
-      navBottom: nav.statusBar + nav.navH,
+      /* 顶栏右侧要给胶囊让出的宽度；窄屏时工具收成纯图标 */
+      capRight: nav.capRight,
+      compact,
+      rowW,
       bannerBottom: DOCK_H + safeBottom + 16,
       soundOn: Sfx.enabled !== false,
     });

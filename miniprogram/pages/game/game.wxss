@@ -7,8 +7,11 @@
    ========================================================= */
 
 /* ---------- 顶栏 ----------
-   三行：导航条（只有招牌，右边留给微信胶囊）/ 记分牌 / 工具。
-   工具千万别塞回第一行：胶囊吃掉右边 90 多 px，挤在一起必被压住。 */
+   第一行：招牌 + 三颗工具，右侧整段按 capRight 留给微信胶囊。
+   两条铁律：
+     1. 工具定宽（44×44），绝不能被内容撑开 —— 撑开就会顶破留白钻进胶囊
+     2. 招牌可以缩（flex-shrink:1），工具不缩 —— 空间不够时先牺牲招牌，
+        按钮永远停在留白之内 */
 
 .topbar {
   position: relative;
@@ -23,52 +26,73 @@
   box-shadow: 0 6px 18px rgba(18, 49, 42, 0.07);
 }
 
-/* 第一行就是导航条：高度和胶囊一样，内容自然垂直居中 */
+/* 导航条：高度和胶囊一致，内容和胶囊自然齐平 */
 .topbar__row {
   display: flex;
   align-items: center;
+  gap: 8px;
   height: 44px;
   min-width: 0;
 }
 
-/* 工具行：靠右，但整行都在胶囊下面，怎么排都不会撞 */
-.tools {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
+.topbar__row .logo {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
 }
 
-.tool--chip {
-  position: relative;
-  flex: 0 0 72px;
+.tools {
+  flex: 0 0 auto;
   display: flex;
-  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.tool--sm {
+  position: relative;
+  flex: 0 0 44px;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  width: 72px;
-  height: 30px;
+  gap: 2px;
+  width: 44px;
+  height: 44px;
   min-width: 0;
   min-height: 0;
   margin: 0;
-  padding: 0;
-  border-radius: 10px;
+  padding: 4px 2px 3px;
+  border-radius: 13px;
   box-sizing: border-box;
   line-height: 1;
 }
 
-.tool--chip .tool__ico {
-  font-size: 14px;
+.tool--sm .tool__ico {
+  font-size: 16px;
 }
 
-.tool--chip .tool__cap {
-  font-size: 11px;
+.tool--sm .tool__cap {
+  font-size: 9px;
   letter-spacing: 0;
-  color: var(--text-dim);
+  color: var(--text-3);
 }
 
-/* 透明的分享按钮：铺满整颗胶囊，样式一律不参与 */
+/* 窄屏（可用宽度放不下「招牌 + 带字工具」）：工具收成纯图标 */
+.topbar__row.is-compact .tool--sm {
+  flex-basis: 34px;
+  width: 34px;
+}
+
+.topbar__row.is-compact .tool__cap {
+  display: none;
+}
+
+.topbar__row.is-compact .logo__half--warm {
+  display: none;
+}
+
+/* 透明的分享按钮：铺满整颗工具砖，样式一律不参与 */
 .tool__share {
   position: absolute;
   left: 0;
