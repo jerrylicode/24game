@@ -1,41 +1,74 @@
-<view class="page" style="padding-top:{{topPad}}px">
+<view class="shell shell--page">
+  <view class="glow glow--a"></view>
+  <view class="glow glow--b"></view>
 
-  <view class="head">
-    <view class="head__title">24Game</view>
-    <view class="head__sub">拖两张牌合成 24 点 · 15 档 300 关</view>
-    <view class="bar">
-      <view class="bar__fill" style="width:{{pct}}%"></view>
+  <view class="lvm" style="padding-top:{{topPad}}px">
+
+    <!-- 头部：标题 + 总进度 + 关闭 -->
+    <view class="lvm__head">
+      <text class="lvm__title">闯关</text>
+      <text class="lvm__prog">{{cleared}} / {{total}}</text>
+      <view class="lvm__close" hover-class="is-press" bindtap="back">✕</view>
     </view>
-    <view class="head__stat">已通关 {{cleared}} / {{total}}　{{pct}}%</view>
+
+    <view class="lvm__bar">
+      <view class="lvm__bar-in" style="width:{{pct}}%"></view>
+    </view>
+
+    <!-- 档位标签：横向可滑，点一下直接跳档 -->
+    <scroll-view
+      class="lvm__tabs"
+      scroll-x
+      scroll-with-animation
+      scroll-into-view="tab-{{active}}"
+    >
+      <view
+        wx:for="{{tiers}}"
+        wx:key="i"
+        id="tab-{{index}}"
+        class="lvm__tab {{active === index ? 'is-active' : ''}}"
+        data-i="{{index}}"
+        bindtap="pickTab"
+      >
+        <text class="lvm__tab-name">{{item.name}}</text>
+        <text class="lvm__tab-count">{{item.done}}/20</text>
+      </view>
+    </scroll-view>
+
+    <!-- 档位页：左右滑动切换，每页 5×4 = 20 关 -->
+    <swiper
+      class="lvm__pager"
+      current="{{active}}"
+      bindchange="onSwiper"
+      duration="260"
+    >
+      <swiper-item wx:for="{{tiers}}" wx:key="i">
+        <view class="lvm__page">
+          <view class="lvm__page-head">
+            <text class="lvm__page-name">{{item.name}}</text>
+            <text class="lvm__page-rule">{{item.rule}}</text>
+          </view>
+
+          <view class="lvm__grid">
+            <view
+              wx:for="{{item.levels}}"
+              wx:for-item="lv"
+              wx:key="gi"
+              class="lvm__node is-{{lv.state}}"
+              data-gi="{{lv.gi}}"
+              data-state="{{lv.state}}"
+              bindtap="pick"
+            >{{lv.label}}</view>
+          </view>
+        </view>
+      </swiper-item>
+    </swiper>
+
+    <!-- 底部：上一档 / 提示 / 下一档 -->
+    <view class="lvm__foot">
+      <view class="lvm__arrow {{active === 0 ? 'is-off' : ''}}" hover-class="is-press" bindtap="prev">‹</view>
+      <text class="lvm__note">左右滑动切换档位 · 点格子进关</text>
+      <view class="lvm__arrow {{active === 14 ? 'is-off' : ''}}" hover-class="is-press" bindtap="next">›</view>
+    </view>
   </view>
-
-  <scroll-view class="list" scroll-y>
-    <view class="tier" wx:for="{{tiers}}" wx:for-item="tier" wx:for-index="ti" wx:key="i">
-      <view class="tier__head">
-        <view class="tier__title">
-          <text class="tier__name">{{tier.name}}</text>
-          <text class="tier__rule">{{tier.rule === 'int' ? '整数' : '含分数'}}</text>
-        </view>
-        <text class="tier__done {{tier.done === 20 ? 'is-full' : ''}}">{{tier.done}}/20</text>
-      </view>
-      <view class="tier__note">{{tier.note}}</view>
-      <view class="grid">
-        <view
-          wx:for="{{tier.levels}}"
-          wx:for-item="lv"
-          wx:for-index="li"
-          wx:key="gi"
-          class="cell cell--{{lv.state}}"
-          data-gi="{{lv.gi}}"
-          data-state="{{lv.state}}"
-          bindtap="pick"
-        >
-          <text class="cell__n">{{lv.label}}</text>
-        </view>
-      </view>
-    </view>
-
-    <view class="foot">一共 300 关，慢慢来</view>
-  </scroll-view>
-
 </view>

@@ -1,6 +1,6 @@
 {
   "description": "24Game 微信小程序版（demo）",
-  "appid": "touristappid",
+  "appid": "wx304c7d1d7fd567cf",
   "compileType": "miniprogram",
   "libVersion": "3.5.0",
   "projectname": "24game-miniprogram",
@@ -13,16 +13,36 @@
     "coverView": true,
     "lazyloadPlaceholderEnable": false,
     "skylineRenderEnable": false,
-    "ignoreDevUnusedFiles": false
+    "ignoreDevUnusedFiles": false,
+    "compileWorklet": false,
+    "uglifyFileName": false,
+    "uploadWithSourceMap": true,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "condition": false,
+    "swc": false,
+    "disableSWC": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
   },
   "condition": {},
   "packOptions": {
     "ignore": [
       {
-        "type": "folder",
-        "value": "test"
+        "value": "test",
+        "type": "folder"
       }
     ],
     "include": []
-  }
+  },
+  "simulatorPluginLibVersion": {},
+  "editorSetting": {}
 }

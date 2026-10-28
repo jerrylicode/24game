@@ -1,0 +1,326 @@
+/* =========================================================
+   home.wxss —— 主界面
+   竖向三段：招牌 / 牌堆 / 进度与按钮
+   ========================================================= */
+
+.home {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 0 26rpx 24rpx;
+  /* 底部安全区：iPhone 的横条不能压住页脚 */
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+}
+
+/* ---------- 招牌 ---------- */
+
+.home__brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18rpx;
+  flex: 0 0 auto;
+}
+
+.logo--lg {
+  border-radius: 20rpx;
+  transform: rotate(-3deg);
+}
+
+.logo--lg .logo__half {
+  height: 62rpx;
+}
+
+.logo--lg .logo__half--mint {
+  width: 88rpx;
+  border-radius: 20rpx 0 0 20rpx;
+  box-shadow: 0 7rpx 0 #0b8f6d;
+}
+
+.logo--lg .logo__half--warm {
+  width: 102rpx;
+  border-radius: 0 20rpx 20rpx 0;
+  box-shadow: 0 7rpx 0 #c98a10;
+}
+
+.logo__t--lg {
+  font-size: 37rpx;
+}
+
+.logo__t--lg.logo__t--w {
+  font-size: 31rpx;
+}
+
+.home__slogan {
+  font-size: 24rpx;
+  font-weight: 700;
+  letter-spacing: 0.5rpx;
+  color: var(--text-3);
+}
+
+/* 三步玩法小药丸：填住标题和牌堆之间的空，顺便把规则讲了 */
+.home__steps {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-top: 6rpx;
+}
+
+.home__step {
+  padding: 7rpx 16rpx;
+  border-radius: 99rpx;
+  font-size: 21rpx;
+  font-weight: 800;
+  color: var(--mint-deep);
+  background: linear-gradient(180deg, #ffffff, #eafaf3);
+  border: 1px solid rgba(23, 201, 154, 0.32);
+  box-shadow: 0 2rpx 0 rgba(18, 49, 42, 0.06);
+}
+
+.home__step--win {
+  color: var(--amber-deep);
+  border-color: rgba(201, 138, 16, 0.4);
+  background: linear-gradient(180deg, #ffffff, #fff5dd);
+}
+
+.home__arrow {
+  font-size: 20rpx;
+  color: var(--text-3);
+}
+
+/* 三步玩法小药丸：填住标题和牌堆之间的空，顺便把规则讲了 */
+.home__steps {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-top: 6rpx;
+}
+
+.home__step {
+  padding: 7rpx 16rpx;
+  border-radius: 99rpx;
+  font-size: 21rpx;
+  font-weight: 800;
+  color: var(--mint-deep);
+  background: linear-gradient(180deg, #ffffff, #eafaf3);
+  border: 1px solid rgba(23, 201, 154, 0.32);
+  box-shadow: 0 2rpx 0 rgba(18, 49, 42, 0.06);
+}
+
+.home__step--win {
+  color: var(--amber-deep);
+  border-color: rgba(201, 138, 16, 0.4);
+  background: linear-gradient(180deg, #ffffff, #fff5dd);
+}
+
+.home__arrow {
+  font-size: 20rpx;
+  color: var(--text-3);
+}
+
+/* ---------- 牌堆：三张牌摆扇形 ---------- */
+
+.deck {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 400rpx;
+  margin: 8rpx 0 4rpx;
+}
+
+.deck__card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 270rpx;
+  height: 383rpx;
+  margin-left: -135rpx;
+  margin-top: -191rpx;
+  border-radius: 28rpx;
+  box-shadow: 0 7rpx 0 #cbdad3, 0 22rpx 38rpx rgba(18, 49, 42, 0.2);
+}
+
+.deck__card .card__glow,
+.deck__card .card__edge {
+  border-radius: 28rpx;
+}
+
+.deck__card .card__center {
+  font-size: 113rpx;
+}
+
+.deck__card .card__v {
+  font-size: 39rpx;
+}
+
+.deck__card .card__s {
+  font-size: 31rpx;
+}
+
+.deck__card .card__corner--tl {
+  left: 20rpx;
+  top: 18rpx;
+}
+
+.deck__card .card__corner--br {
+  right: 20rpx;
+  bottom: 18rpx;
+}
+
+/* 扇形：两张后牌往两侧摊开，露出的部分要够多才看得出是「三张牌」 */
+.deck__card--l {
+  transform: rotate(-16deg) translate(-166rpx, 20rpx);
+}
+
+.deck__card--r {
+  transform: rotate(16deg) translate(166rpx, 20rpx);
+}
+
+/* 前面那张是「结果牌」：金环 + 轻轻呼吸，一眼看出目标是 24 */
+.deck__card--f {
+  transform: translate(0, -16rpx) scale(1.04);
+  box-shadow: 0 0 0 5rpx var(--amber), 0 0 44rpx rgba(255, 194, 61, 0.6),
+    0 9rpx 0 #e2d3ab, 0 26rpx 44rpx rgba(18, 49, 42, 0.22);
+  animation: deckFloat 3.4s ease-in-out infinite;
+}
+
+.deck__win {
+  color: var(--amber-deep);
+}
+
+@keyframes deckFloat {
+  0%, 100% { transform: translate(0, -16rpx) scale(1.04) rotate(-1.2deg); }
+  50% { transform: translate(0, -26rpx) scale(1.05) rotate(1.2deg); }
+}
+
+/* ---------- 进度 + 按钮 ---------- */
+
+.home__panel {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.progress {
+  padding: 20rpx 22rpx;
+  border-radius: 22rpx;
+  background: linear-gradient(180deg, #ffffff, #f2fbf7);
+  border: 1px solid var(--line);
+  box-shadow: 0 3rpx 0 rgba(18, 49, 42, 0.07), 0 1rpx 0 #ffffff inset;
+}
+
+.progress__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.progress__label {
+  font-size: 24rpx;
+  font-weight: 800;
+  color: var(--text-dim);
+}
+
+.progress__num {
+  font-size: 30rpx;
+  font-weight: 900;
+  color: var(--coral-deep);
+}
+
+.progress__track {
+  height: 14rpx;
+  border-radius: 99rpx;
+  background: #e4f1eb;
+  overflow: hidden;
+}
+
+.progress__bar {
+  height: 100%;
+  border-radius: 99rpx;
+  background: linear-gradient(90deg, var(--mint-hi), var(--mint) 70%, #12bd8f);
+  transition: width 0.4s cubic-bezier(0.22, 1.4, 0.36, 1);
+}
+
+.progress__hint {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 21rpx;
+  color: var(--text-3);
+}
+
+/* 主按钮：暖橙糖砖，比其它按钮高一头 */
+.cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3rpx;
+  height: 116rpx;
+  border-radius: 26rpx;
+  background: linear-gradient(168deg, #ffeab6 0%, var(--amber-hi) 36%, var(--amber) 100%);
+  border: 1px solid var(--amber-deep);
+  box-shadow: 0 9rpx 0 var(--amber-deep), 0 22rpx 34rpx rgba(201, 138, 16, 0.32),
+    0 3rpx 0 rgba(255, 255, 255, 0.8) inset;
+  transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.16s;
+}
+
+.cta.is-press {
+  transform: translateY(7rpx) !important;
+  box-shadow: 0 2rpx 0 var(--amber-deep), 0 8rpx 16rpx rgba(201, 138, 16, 0.26) !important;
+}
+
+.cta__main {
+  font-size: 36rpx;
+  font-weight: 900;
+  letter-spacing: 1rpx;
+  color: var(--ink);
+}
+
+.cta__sub {
+  font-size: 21rpx;
+  font-weight: 800;
+  color: rgba(11, 42, 33, 0.66);
+}
+
+.home__row {
+  display: flex;
+  gap: 14rpx;
+}
+
+.home__tool {
+  flex: 1;
+  min-height: 88rpx;
+  border-radius: 22rpx;
+}
+
+.home__tool .tool__ico {
+  font-size: 30rpx;
+}
+
+.home__ico {
+  width: 34rpx;
+  height: 34rpx;
+  gap: 5rpx;
+}
+
+.home__ico .ico-grid__c {
+  border-radius: 4rpx;
+  background: var(--mint-deep);
+}
+
+.home__tool .tool__cap {
+  font-size: 21rpx;
+}
+
+.home__foot {
+  flex: 0 0 auto;
+  margin-top: 20rpx;
+  text-align: center;
+  font-size: 20rpx;
+  letter-spacing: 0.5rpx;
+  color: var(--text-3);
+}

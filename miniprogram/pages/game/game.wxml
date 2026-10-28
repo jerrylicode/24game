@@ -1,85 +1,212 @@
 <wxs src="../../wxs/drag.wxs" module="drag" />
 
-<view class="stage {{shaking ? 'is-shaking' : ''}}" style="padding-top:{{topPad}}px">
+<view class="shell {{shaking ? 'is-shaking' : ''}}">
+  <view class="glow glow--a"></view>
+  <view class="glow glow--b"></view>
 
-  <view class="hud">
-    <view class="hud__back" bindtap="goBack">‹</view>
-    <view class="hud__info">
-      <text class="hud__level">{{levelName}}</text>
-      <text class="hud__sol">{{tierName}} · 这题 {{solCount}} 种解法</text>
+  <!-- ---------- 顶栏：招牌 + 工具 + 记分牌 ---------- -->
+  <view class="topbar" style="padding-top:{{topPad}}px">
+    <view class="topbar__row">
+      <view class="logo" bindtap="goBack">
+        <view class="logo__half logo__half--mint"><text class="logo__t">24</text></view>
+        <view class="logo__half logo__half--warm"><text class="logo__t logo__t--w">Game</text></view>
+      </view>
+
+      <view class="tools">
+        <view class="tool tool--sm" hover-class="is-press" bindtap="toggleSound">
+          <text class="tool__ico {{soundOn ? '' : 'is-mute'}}">♪</text>
+          <text class="tool__cap">音效</text>
+        </view>
+        <button class="tool tool--sm tool--btn" open-type="share" hover-class="is-press">
+          <text class="tool__ico tool__ico--sky">⤴</text>
+          <text class="tool__cap">分享</text>
+        </button>
+        <view class="tool tool--sm" hover-class="is-press" bindtap="openHelp">
+          <text class="tool__ico tool__ico--dim">?</text>
+          <text class="tool__cap">说明</text>
+        </view>
+      </view>
     </view>
-    <view class="hud__retry" bindtap="retry">重来</view>
-  </view>
 
-  <view class="tip">把一张牌拖到另一张牌上，松手后选运算符</view>
-
-  <view class="board" style="height:{{boardH}}px">
-    <view
-      wx:for="{{cards}}"
-      wx:key="id"
-      class="slot"
-      style="left:{{item.x}}px;top:{{item.y}}px;width:{{cardSize}}px;height:{{cardSize}}px"
-    >
-      <view
-        class="card {{item.disp.length > 2 ? 'card--sm' : ''}}"
-        id="card-{{index}}"
-        data-idx="{{index}}"
-        bindtouchstart="{{drag.start}}"
-        bindtouchmove="{{drag.move}}"
-        bindtouchend="{{drag.end}}"
-        bindtouchcancel="{{drag.end}}"
-      >
-        <text class="card__num">{{item.disp}}</text>
+    <view class="stats">
+      <view class="stat stat--level" hover-class="stat--press" bindtap="openLevels">
+        <text class="stat__ico">⚑</text>
+        <text class="stat__val">{{levelNo}}</text>
+        <text class="stat__tier">{{tierName}}</text>
+      </view>
+      <view class="stat">
+        <text class="stat__ico">◷</text>
+        <text class="stat__val">{{timer}}</text>
+      </view>
+      <view class="stat">
+        <text class="stat__ico">⇢</text>
+        <text class="stat__val">{{moves}}</text>
+      </view>
+      <view class="stat stat--best">
+        <text class="stat__ico">★</text>
+        <text class="stat__val">{{best}}</text>
       </view>
     </view>
   </view>
 
-  <view class="expr" wx:if="{{expr}}">{{expr}}</view>
+  <!-- ---------- 牌桌 ---------- -->
+  <view class="table">
+    <view class="felt"></view>
+    <view class="vignette"></view>
 
-  <view class="dead" wx:if="{{dead && status === 'playing'}}">
-    <text class="dead__txt">剩下的牌凑不出 24 了</text>
-    <text class="dead__btn" bindtap="retry">重来</text>
-  </view>
-
-  <!-- 运算符面板 -->
-  <view class="mask" wx:if="{{pending}}" bindtap="cancelPending">
-    <view class="panel" catchtap="noop">
-      <view class="panel__head">
-        <text class="chip">{{pending.fromDisp}}</text>
-        <text class="panel__q">?</text>
-        <text class="chip">{{pending.toDisp}}</text>
-      </view>
-      <view class="panel__hint">选一个运算符</view>
-      <view class="panel__row">
+    <view class="board">
+      <view wx:for="{{cards}}" wx:key="id" class="slot" style="{{item.st}}">
         <view
-          wx:for="{{ops}}"
-          wx:key="key"
-          class="opbtn"
-          data-key="{{item.key}}"
-          bindtap="applyOp"
-        >{{item.sym}}</view>
+          class="grab {{item.spawn ? 'is-spawn' : ''}}"
+          id="card-{{index}}"
+          data-idx="{{index}}"
+          bindtouchstart="{{drag.start}}"
+          bindtouchmove="{{drag.move}}"
+          bindtouchend="{{drag.end}}"
+          bindtouchcancel="{{drag.end}}"
+        >
+          <view class="card card--fill {{item.cls}}">
+            <view class="card__glow"></view>
+
+            <view class="card__corner card__corner--tl" style="left:{{padX}}px;top:{{padY}}px">
+              <text class="card__v" style="font-size:{{fsV}}px">{{item.disp}}</text>
+              <text class="card__s" style="font-size:{{fsS}}px">{{item.suit}}</text>
+            </view>
+
+            <view class="card__center" style="font-size:{{item.fsc}}px">{{item.disp}}</view>
+
+            <view class="card__corner card__corner--br" style="right:{{padX}}px;bottom:{{padY}}px">
+              <text class="card__v" style="font-size:{{fsV}}px">{{item.disp}}</text>
+              <text class="card__s" style="font-size:{{fsS}}px">{{item.suit}}</text>
+            </view>
+
+            <view class="card__edge"></view>
+          </view>
+        </view>
       </view>
-      <view class="panel__cancel" bindtap="cancelPending">取消</view>
     </view>
   </view>
 
-  <!-- 结果面板 -->
-  <view class="mask" wx:if="{{status !== 'playing'}}">
-    <view class="panel">
-      <view class="panel__title {{status === 'win' ? 'is-win' : 'is-lose'}}">
-        {{status === 'win' ? '24 点达成' : '没凑成 24'}}
+  <!-- ---------- 底部工具坞 ---------- -->
+  <view class="dock">
+    <view class="tool {{canUndo ? '' : 'is-off'}}" hover-class="is-press" bindtap="undo">
+      <text class="tool__ico">↶</text>
+      <text class="tool__cap">撤销</text>
+    </view>
+    <view class="tool" hover-class="is-press" bindtap="retry">
+      <text class="tool__ico tool__ico--sky">↻</text>
+      <text class="tool__cap">重开</text>
+    </view>
+    <view class="tool tool--hero" hover-class="is-press" bindtap="openLevels">
+      <view class="ico-grid">
+        <view class="ico-grid__c"></view>
+        <view class="ico-grid__c"></view>
+        <view class="ico-grid__c"></view>
+        <view class="ico-grid__c"></view>
       </view>
-      <view class="panel__expr">{{expr}}</view>
-      <view class="panel__row">
-        <view class="btn btn--ghost" bindtap="retry">再来一次</view>
-        <view class="btn" bindtap="nextLevel">{{isLast ? '回到地图' : '下一关'}}</view>
-      </view>
+      <text class="tool__cap">关卡</text>
+    </view>
+    <view class="tool" hover-class="is-press" bindtap="hint">
+      <text class="tool__ico tool__ico--amber">✦</text>
+      <text class="tool__cap">提示</text>
+    </view>
+    <view class="tool" hover-class="is-press" bindtap="answers">
+      <text class="tool__ico tool__ico--coral">≡</text>
+      <text class="tool__cap">答案</text>
     </view>
   </view>
 
+  <!-- ---------- 胶囊提示条 ---------- -->
+  <view
+    wx:if="{{banner}}"
+    class="banner banner--{{banner.kind}}"
+    style="bottom:{{bannerBottom}}px"
+  >{{banner.text}}</view>
 </view>
 
-<!-- 特效画布：必须和 .stage 同级。.stage 抖动时会带 transform，
-     fixed 子元素会改以它为基准定位，canvas 就会跟着错位 -->
-<canvas type="2d" id="fxCanvas" class="fx"></canvas>
+<!-- =========================================================
+     运算符圆环：两张牌一合上，就在它们中点展开一圈
+     必须放在 .shell 外面 —— shell 震屏时带 transform，
+     fixed 子元素会改以它为基准定位
+     ========================================================= -->
+<view class="ring" wx:if="{{ring}}">
+  <view class="ring__scrim" bindtap="cancelPending"></view>
+  <view class="ring__hub" style="left:{{ring.x}}px;top:{{ring.y}}px">
+    <view class="ring__halo"></view>
+    <view class="ring__item ring__item--1" data-key="+" hover-class="ring__item--press" bindtap="applyOp">+</view>
+    <view class="ring__item ring__item--2" data-key="-" hover-class="ring__item--press" bindtap="applyOp">−</view>
+    <view class="ring__item ring__item--3" data-key="*" hover-class="ring__item--press" bindtap="applyOp">×</view>
+    <view class="ring__item ring__item--4" data-key="/" hover-class="ring__item--press" bindtap="applyOp">÷</view>
+    <view class="ring__cancel" bindtap="cancelPending">
+      <text class="ring__cancel-ico">↩</text>
+    </view>
+  </view>
+</view>
 
+<!-- =========================================================
+     弹层
+     ========================================================= -->
+
+<!-- 通关 -->
+<view class="modal" wx:if="{{modal === 'win'}}">
+  <view class="modal__card modal__card--win">
+    <view class="win-badge">24</view>
+    <view class="modal__title modal__title--center">合成成功！</view>
+    <view class="win-stats">{{winStats}}</view>
+    <view class="modal__actions">
+      <view class="btn btn--primary" hover-class="is-press" bindtap="nextLevel">
+        {{isLast ? '回到地图' : '下一关 →'}}
+      </view>
+      <view class="btn" hover-class="is-press" bindtap="closeModal">看看牌面</view>
+    </view>
+  </view>
+</view>
+
+<!-- 失败 -->
+<view class="modal" wx:if="{{modal === 'lose'}}">
+  <view class="modal__card">
+    <view class="modal__title modal__title--center">没凑到 24</view>
+    <view class="lose-verdict">
+      <text class="lose-num">{{loseValue}}</text>
+      <text class="lose-neq">≠ 24</text>
+    </view>
+    <view class="modal__actions">
+      <view class="btn btn--primary" hover-class="is-press" bindtap="undo">↩︎ 撤销</view>
+      <view class="btn" hover-class="is-press" bindtap="retry">↺ 重开本关</view>
+    </view>
+  </view>
+</view>
+
+<!-- 解法 -->
+<view class="modal" wx:if="{{modal === 'answer'}}" bindtap="closeModal">
+  <view class="modal__card" catchtap="noop">
+    <view class="modal__title">解法</view>
+    <view class="answer-list">
+      <view class="answer-item" wx:for="{{answers}}" wx:key="*this">{{item}}</view>
+    </view>
+    <view class="howto__tip">牌面只显示得数，算式不会画在牌上。</view>
+    <view class="modal__actions">
+      <view class="btn btn--primary" hover-class="is-press" bindtap="closeModal">知道了</view>
+    </view>
+  </view>
+</view>
+
+<!-- 玩法说明 -->
+<view class="modal" wx:if="{{modal === 'help'}}" bindtap="closeModal">
+  <view class="modal__card" catchtap="noop">
+    <view class="modal__title">怎么玩</view>
+    <view class="howto">
+      <view class="howto__li"><text class="howto__no">1</text><text class="howto__tx"><text class="b">拖动</text>一张牌，松手落到另一张牌上</text></view>
+      <view class="howto__li"><text class="howto__no">2</text><text class="howto__tx">两张牌一合上，就在它们<text class="b">中点弹出一圈运算符</text>，选 + − × ÷</text></view>
+      <view class="howto__li"><text class="howto__no">3</text><text class="howto__tx"><text class="b">合成</text>出一张新牌，原来两张合并消失</text></view>
+      <view class="howto__li"><text class="howto__no">4</text><text class="howto__tx">把 4 张牌合到只剩 1 张，且结果为 <text class="b">24</text>，即获胜</text></view>
+    </view>
+    <view class="howto__tip">也可以<text class="b">依次点两张牌</text>。想反过来算（比如 5 − 7），把另一张牌拖过去就行。</view>
+    <view class="modal__actions">
+      <view class="btn btn--primary" hover-class="is-press" bindtap="closeModal">明白了</view>
+    </view>
+  </view>
+</view>
+
+<!-- 特效画布：必须和 .shell 同级，只负责画，不接事件 -->
+<canvas type="2d" id="fxCanvas" class="fx"></canvas>

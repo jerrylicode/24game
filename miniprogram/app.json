@@ -1,11 +1,12 @@
 {
   "pages": [
-    "pages/levels/levels",
-    "pages/game/game"
+    "pages/home/home",
+    "pages/game/game",
+    "pages/levels/levels"
   ],
   "window": {
     "navigationStyle": "custom",
-    "backgroundColor": "#eaf8f2",
+    "backgroundColor": "#f2fbf7",
     "backgroundTextStyle": "dark",
     "navigationBarTextStyle": "black"
   },

@@ -3,12 +3,15 @@
    为什么用 WXS：setData 每帧通信会掉到 20fps 以下；
    WXS 直接改样式，拖拽才跟手。
 
-   两个易错点（按官方文档）：
+   三个易错点（按官方文档）：
      · 第二个参数 ownerInstance 是「页面实例」，只能用来 callMethod，
        它的 setStyle 不能改页面内元素 —— 改样式要用 event.instance
      · callMethod 签名是 (funcName, args) 只收一个参数对象，不能传多个
+     · transform 只写在 .grab 上（它是纯容器），牌面 .card 的 transform
+       留给「选中抬起」等状态，两者互不覆盖
 
-   位移用 transform 实现，位置用外层 slot 的 left/top 绑定，互不干扰。
+   落点判定把「手指的屏幕坐标」直接抛给逻辑层，
+   和 H5 版用 elementFromPoint 是同一个语义：手指压在谁身上就落到谁身上。
    ========================================================= */
 
 /* 取这张牌自己的 ComponentDescriptor：优先 event.instance，兜底按 id 查 */
@@ -19,38 +22,54 @@ function pick(e, ownerInstance) {
 
 function start(e, ownerInstance) {
   var el = pick(e, ownerInstance);
-  var t = e.touches[0];
+  var t = e.touches && e.touches[0];
+  if (!el || !t) return;
+
   var st = el.getState();
   st.sx = t.clientX;
   st.sy = t.clientY;
   st.moved = false;
+
   el.setStyle({
     transition: 'none',
     'z-index': 30,
-    'box-shadow': '0 14px 28px rgba(15, 110, 86, 0.22)'
+    /* 阴影挂在透明容器上，牌盖住中间，只从四周漏出来 —— 就是「拿起来了」 */
+    'box-shadow': '0 9px 0 #c3d5cd, 0 24px 40px rgba(18, 49, 42, 0.22)'
   });
+
   /* 拿起音效得在逻辑层播，这里跨层通知一次（每次拖拽只有这一下） */
   ownerInstance.callMethod('onGrab', { idx: e.currentTarget.dataset.idx });
 }
 
 function move(e, ownerInstance) {
   var el = pick(e, ownerInstance);
+  if (!el) return;
   var st = el.getState();
   if (st.sx === undefined) return;
-  var t = e.touches[0];
+
+  var t = e.touches && e.touches[0];
+  if (!t) return;
+
   var dx = t.clientX - st.sx;
   var dy = t.clientY - st.sy;
   if (dx * dx + dy * dy > 9) st.moved = true;
+
   el.setStyle({ transform: 'translate(' + dx + 'px, ' + dy + 'px)' });
 }
 
 function end(e, ownerInstance) {
   var el = pick(e, ownerInstance);
+  if (!el) return;
   var st = el.getState();
   if (st.sx === undefined) return;
-  var t = e.changedTouches[0];
-  var dx = t.clientX - st.sx;
-  var dy = t.clientY - st.sy;
+
+  var t = (e.changedTouches && e.changedTouches[0]) || (e.touches && e.touches[0]) || {};
+  var dx = (t.clientX || st.sx) - st.sx;
+  var dy = (t.clientY || st.sy) - st.sy;
+  var x = t.clientX || st.sx;
+  var y = t.clientY || st.sy;
+  var idx = e.currentTarget.dataset.idx;
+  var moved = st.moved;
   st.sx = undefined;
 
   /* 先回弹归位，再由逻辑层决定要不要重排 */
@@ -61,12 +80,11 @@ function end(e, ownerInstance) {
     'box-shadow': 'none'
   });
 
-  if (st.moved) {
-    ownerInstance.callMethod('onDrop', {
-      idx: e.currentTarget.dataset.idx,
-      dx: dx,
-      dy: dy
-    });
+  if (moved) {
+    ownerInstance.callMethod('onDrop', { idx: idx, dx: dx, dy: dy, x: x, y: y });
+  } else {
+    /* 没拖动就是一次点击：依次点两张牌也能合成 */
+    ownerInstance.callMethod('onTap', { idx: idx });
   }
 }
 

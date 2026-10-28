@@ -1,18 +1,23 @@
 /* =========================================================
-   progress.js —— 闯关进度
-   只记一个数字：已通关的关卡数量。
-   可玩范围 = 0 ~ cleared（cleared 这一关就是当前关）
+   progress.js —— 闯关进度 + 每档最佳用时
+   cleared：已通关数量（0 起，等于「当前该打的关」）
+   best：  { [档位序号]: 秒数 }，只存更快的那次
    ========================================================= */
 const KEY = 'g24_progress';
 
 function load() {
   try {
     const v = wx.getStorageSync(KEY);
-    if (v && typeof v.cleared === 'number' && v.cleared >= 0) return v;
+    if (v && typeof v.cleared === 'number' && v.cleared >= 0) {
+      return {
+        cleared: v.cleared,
+        best: v.best && typeof v.best === 'object' ? v.best : {},
+      };
+    }
   } catch (e) {
     // 读不出来就当新玩家
   }
-  return { cleared: 0 };
+  return { cleared: 0, best: {} };
 }
 
 function save(p) {
@@ -33,9 +38,27 @@ function markCleared(idx) {
   return p;
 }
 
-function reset() {
-  save({ cleared: 0 });
-  return { cleared: 0 };
+/** 某一档的最佳用时（秒），没打过返回 null */
+function loadBest(tier) {
+  const v = load().best[tier];
+  return typeof v === 'number' && v >= 0 ? v : null;
 }
 
-module.exports = { KEY, load, save, markCleared, reset };
+/** 记录最佳用时：更快才写入，返回是否刷新了纪录 */
+function saveBest(tier, sec) {
+  const p = load();
+  const cur = p.best[tier];
+  if (typeof cur !== 'number' || sec < cur) {
+    p.best[tier] = sec;
+    save(p);
+    return true;
+  }
+  return false;
+}
+
+function reset() {
+  save({ cleared: 0, best: {} });
+  return { cleared: 0, best: {} };
+}
+
+module.exports = { KEY, load, save, markCleared, loadBest, saveBest, reset };

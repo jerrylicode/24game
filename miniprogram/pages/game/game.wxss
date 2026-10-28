@@ -1,290 +1,585 @@
 /* =========================================================
-   game.wxss —— 主玩法页样式
-   注意 WXSS 限制：不能用 * 通配符、不能用 :has()，
-   拖拽用的 transform 完全留给 WXS，这里不要碰 .card 的 transform
+   game.wxss —— 主玩法页
+   结构：顶栏（招牌 + 工具 + 记分牌）/ 牌桌 / 底部工具坞
+   牌面本身在 app.wxss 里（主界面也要用同一套）
+   注意：拖拽的 transform 全部交给 WXS 写在 .grab 上，
+   这里不要给 .grab 写 transform，否则会打架
    ========================================================= */
 
-.stage {
-  min-height: 100vh;
-  padding: 0 16px 32px;
+/* ---------- 顶栏 ---------- */
+
+.topbar {
+  position: relative;
+  z-index: 3;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
+  gap: 7px;
+  padding: 8px 12px 9px;
+  background: linear-gradient(180deg, #ffffff 0%, #eef9f4 100%);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 6px 18px rgba(18, 49, 42, 0.07);
 }
 
-/* ---------- 顶部 ---------- */
-
-.hud {
+.topbar__row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 8px 4px 0;
-}
-
-.hud__back {
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  background: #ffffff;
-  border: 1px solid #dbe7e1;
-  color: #0b8f6d;
-  font-size: 22px;
-  line-height: 30px;
-  text-align: center;
-  margin-right: 10px;
-}
-
-.hud__info {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+  gap: 8px;
   min-width: 0;
 }
 
-.hud__level {
-  font-size: 20px;
-  font-weight: 500;
-  color: #123c31;
-  line-height: 1.3;
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
 }
 
-.hud__sol {
+.tool--sm {
+  flex: 0 0 auto;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 4px 6px;
+  border-radius: 13px;
+  gap: 2px;
+}
+
+.tool--sm .tool__ico {
+  font-size: 17px;
+}
+
+.tool--sm .tool__cap {
+  font-size: 9px;
+  letter-spacing: 0;
+  color: var(--text-3);
+}
+
+/* 分享是 <button open-type="share">，把小程序默认按钮样式清掉 */
+.tool--btn {
+  width: auto;
+  margin: 0;
+  line-height: 1;
+  font-size: 0;
+  border-radius: 13px;
+}
+
+.tool--btn::after {
+  border: none;
+}
+
+.tool__ico--sky {
+  color: var(--sky-deep);
+}
+
+.tool__ico--dim {
+  color: var(--text-dim);
+}
+
+.tool__ico--amber {
+  color: var(--amber-deep);
+}
+
+.tool__ico--coral {
+  color: var(--coral-deep);
+}
+
+.tool__ico--ink {
+  color: var(--ink);
+}
+
+/* ---------- 记分牌 ---------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr 1fr;
+  align-items: stretch;
+  height: 38px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f2fbf7 100%);
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 0 rgba(18, 49, 42, 0.07), 0 1px 0 #ffffff inset;
+  overflow: hidden;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 0 4px;
+  border-left: 1px solid var(--line);
+}
+
+.stat:first-child {
+  border-left: 0;
+}
+
+.stat__ico {
+  flex: 0 0 auto;
   font-size: 12px;
-  color: #6b8a80;
-  margin-top: 2px;
+  line-height: 1;
+  color: var(--mint-deep);
 }
 
-.hud__retry {
+.stat__val {
   font-size: 14px;
-  color: #0b8f6d;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: #ffffff;
-  border: 1px solid #dbe7e1;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.2px;
 }
 
-.tip {
-  font-size: 13px;
-  color: #6b8a80;
-  padding: 10px 4px 0;
+.stat__tier {
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 4.4em;
+}
+
+.stat--level .stat__ico {
+  color: var(--amber-deep);
+}
+
+.stat--press {
+  background: rgba(255, 194, 61, 0.22);
+}
+
+.stat--best .stat__ico,
+.stat--best .stat__val {
+  color: var(--coral-deep);
 }
 
 /* ---------- 牌桌 ---------- */
 
+.table {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  overflow: hidden;
+}
+
+/* 游戏垫：薄荷底 + 淡点阵 + 一圈内高光 */
+.felt {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  right: 14px;
+  bottom: 14px;
+  border-radius: 28px;
+  background-color: #e9f8f2;
+  background-image: radial-gradient(rgba(16, 60, 45, 0.075) 1px, rgba(16, 60, 45, 0) 1.4px),
+    linear-gradient(180deg, #eefcf7 0%, #dcf3e9 100%);
+  background-size: 18px 18px, 100% 100%;
+  box-shadow: 0 0 0 1px rgba(16, 60, 45, 0.07) inset,
+    inset 0 2px 0 rgba(255, 255, 255, 0.9), 0 18px 40px rgba(18, 49, 42, 0.12);
+}
+
+/* 四周压一点点暗角，视线自然收到牌上 */
+.vignette {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: radial-gradient(78% 68% at 50% 42%,
+    rgba(18, 49, 42, 0) 46%, rgba(18, 49, 42, 0.1) 100%);
+}
+
 .board {
   position: relative;
-  width: 100%;
-  margin-top: 8px;
-}
-
-.slot {
-  position: absolute;
-  transition: left 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
-              top 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.card {
+  z-index: 2;
   width: 100%;
   height: 100%;
-  border-radius: 16px;
-  background: #ffffff;
-  border: 1px solid #e6f0eb;
-  box-shadow: 0 6px 16px rgba(18, 60, 49, 0.10);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+}
+
+/* 每张牌一个槽位：位置变化由 left/top 过渡完成，等于免费的 FLIP */
+.slot {
+  position: absolute;
+  transition: left 0.28s cubic-bezier(0.22, 1.4, 0.36, 1),
+    top 0.28s cubic-bezier(0.22, 1.4, 0.36, 1);
+}
+
+/* 拖拽手势挂在 .grab 上：它只负责 transform，
+   牌面（.card）的 transform 留给「选中抬起」这些状态 */
+.grab {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
   will-change: transform;
-  animation: cardIn 0.22s ease-out;
 }
 
-@keyframes cardIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* 发牌时四张牌错开落下 */
+.slot:nth-child(2) .grab.is-spawn {
+  animation-delay: 0.06s;
 }
 
-.card__num {
-  font-size: 34px;
-  font-weight: 500;
-  color: #123c31;
-  line-height: 1;
-  animation: numPop 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.3);
+.slot:nth-child(3) .grab.is-spawn {
+  animation-delay: 0.12s;
 }
 
-@keyframes numPop {
-  from { transform: scale(0.55); }
-  to { transform: scale(1); }
+.slot:nth-child(4) .grab.is-spawn {
+  animation-delay: 0.18s;
 }
 
-.card--sm .card__num {
-  font-size: 22px;
+/* ---------- 底部工具坞 ---------- */
+
+.dock {
+  position: relative;
+  z-index: 4;
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: end;
+  gap: 6px;
+  padding: 9px 12px 9px;
+  padding-bottom: calc(9px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, #dbf3e9 0%, #f0fbf6 100%);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -8px 22px rgba(18, 49, 42, 0.08);
 }
 
-/* ---------- 算式回显 ---------- */
-
-.expr {
-  margin-top: 12px;
-  text-align: center;
-  font-size: 15px;
-  color: #0b8f6d;
-  background: #ffffff;
-  border: 1px solid #dbe7e1;
-  border-radius: 12px;
-  padding: 10px 16px;
-  align-self: center;
+/* 中间那颗：暖橙糖砖，比旁边高一头 */
+.tool--hero {
+  min-height: 66px;
+  padding: 8px 5px 7px;
+  border-radius: 19px;
+  color: var(--ink);
+  background: linear-gradient(168deg, #ffeab6 0%, var(--amber-hi) 36%, var(--amber) 100%);
+  border-color: var(--amber-deep);
+  box-shadow: 0 5px 0 var(--amber-deep), 0 14px 26px rgba(201, 138, 16, 0.34),
+    0 2px 0 rgba(255, 255, 255, 0.8) inset;
 }
 
-/* ---------- 死局提示 ---------- */
-
-.dead {
-  margin-top: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
+.tool--hero .tool__ico {
+  font-size: 24px;
 }
 
-.dead__txt {
-  font-size: 14px;
-  color: #b4553f;
+/* 关卡图标：2×2 小方块，比字体符号更像「一格格关卡」 */
+.ico-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 3px;
+  width: 22px;
+  height: 22px;
 }
 
-.dead__btn {
-  font-size: 14px;
-  color: #ffffff;
-  background: #ff7a6b;
-  padding: 6px 16px;
+.ico-grid__c {
+  background: var(--ink);
+  border-radius: 2.5px;
+}
+
+.tool--hero .tool__cap {
+  font-size: 10.5px;
+  color: rgba(11, 42, 33, 0.78);
+}
+
+/* ---------- 胶囊提示条 ---------- */
+
+.banner {
+  position: fixed;
+  left: 50%;
+  z-index: 90;
+  max-width: 86vw;
+  padding: 9px 16px;
   border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--ink);
+  background: linear-gradient(180deg, #ffffff, #eafaf3);
+  border: 1px solid rgba(23, 201, 154, 0.35);
+  box-shadow: 0 12px 26px rgba(18, 49, 42, 0.16), 0 3px 0 #d9efe6;
+  transform: translateX(-50%);
+  animation: bannerIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* ---------- 遮罩与面板 ---------- */
+.banner--warn {
+  border-color: rgba(255, 122, 107, 0.45);
+  background: linear-gradient(180deg, #ffffff, #fff1ee);
+  box-shadow: 0 12px 26px rgba(18, 49, 42, 0.16), 0 3px 0 #f7d9d3;
+}
 
-.mask {
+@keyframes bannerIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(14px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+/* =========================================================
+   运算符圆环
+   四个糖果色小球从圆心弹出来，圆心是「取消」白瓷钮
+   ========================================================= */
+
+.ring {
   position: fixed;
   left: 0;
   top: 0;
   right: 0;
   bottom: 0;
-  background: rgba(18, 60, 49, 0.35);
+  z-index: 250;
+}
+
+.ring__scrim {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% 46%,
+    rgba(248, 253, 250, 0.3), rgba(18, 49, 42, 0.34));
+  animation: scrimIn 0.18s ease-out;
+}
+
+@keyframes scrimIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ring__hub {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+/* 背后那圈白瓷盘 */
+.ring__halo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 176px;
+  height: 176px;
+  margin: -88px 0 0 -88px;
+  border-radius: 50%;
+  border: 2px dashed rgba(23, 201, 154, 0.4);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.94),
+    rgba(255, 255, 255, 0.55) 62%, rgba(255, 255, 255, 0) 72%);
+  box-shadow: 0 18px 40px rgba(18, 49, 42, 0.16);
+  pointer-events: none;
+  animation: haloIn 0.36s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes haloIn {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.ring__item {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  border-radius: 50%;
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--ink);
+  box-shadow: 0 5px 0 var(--c-edge), 0 12px 22px rgba(18, 49, 42, 0.22),
+    0 2px 0 rgba(255, 255, 255, 0.65) inset;
 }
 
-.panel {
-  width: 78%;
-  max-width: 320px;
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 24px 20px 20px;
+.ring__item--1 {
+  --c: #17c99a;
+  --c-hi: #8bf3d2;
+  --c-edge: #0b8f6d;
+  background: linear-gradient(180deg, #8bf3d2, #17c99a 72%);
+  animation: ringItem1 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) 0ms both;
+}
+
+.ring__item--2 {
+  --c: #ff7a6b;
+  --c-hi: #ffbcb2;
+  --c-edge: #d33b2c;
+  background: linear-gradient(180deg, #ffbcb2, #ff7a6b 72%);
+  animation: ringItem2 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) 45ms both;
+}
+
+.ring__item--3 {
+  --c: #ffc23d;
+  --c-hi: #ffe19a;
+  --c-edge: #c98a10;
+  background: linear-gradient(180deg, #ffe19a, #ffc23d 72%);
+  animation: ringItem3 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) 90ms both;
+}
+
+.ring__item--4 {
+  --c: #4aa8ff;
+  --c-hi: #b3d9ff;
+  --c-edge: #1668c9;
+  background: linear-gradient(180deg, #b3d9ff, #4aa8ff 72%);
+  animation: ringItem4 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) 135ms both;
+}
+
+/* 四个方位：左上 + / 右上 − / 右下 × / 左下 ÷ */
+@keyframes ringItem1 {
+  from { transform: translate(0, 0) scale(0.35); opacity: 0; }
+  to { transform: translate(-55px, -55px) scale(1); opacity: 1; }
+}
+
+@keyframes ringItem2 {
+  from { transform: translate(0, 0) scale(0.35); opacity: 0; }
+  to { transform: translate(55px, -55px) scale(1); opacity: 1; }
+}
+
+@keyframes ringItem3 {
+  from { transform: translate(0, 0) scale(0.35); opacity: 0; }
+  to { transform: translate(55px, 55px) scale(1); opacity: 1; }
+}
+
+@keyframes ringItem4 {
+  from { transform: translate(0, 0) scale(0.35); opacity: 0; }
+  to { transform: translate(-55px, 55px) scale(1); opacity: 1; }
+}
+
+/* 按下：小球往下沉。
+   注意不能用 transform —— 入场动画用了 animation-fill-mode: both，
+   动画的 transform 优先级高于 hover-class，改了也不会生效 */
+.ring__item--press {
+  box-shadow: 0 2px 0 var(--c-edge), 0 6px 12px rgba(18, 49, 42, 0.18) !important;
+  filter: brightness(1.04);
+}
+
+/* 圆心那个「取消」：白瓷钮，最后弹出来 */
+.ring__cancel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 74px;
+  height: 74px;
+  margin: -37px 0 0 -37px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--text-dim);
+  background: linear-gradient(180deg, #ffffff, #eef8f4);
+  border: 1.5px solid var(--line-2);
+  box-shadow: 0 5px 0 #dbe7e1, 0 14px 26px rgba(18, 49, 42, 0.18);
+  animation: cancelIn 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) 60ms both;
+}
+
+@keyframes cancelIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.ring__cancel-ico {
+  font-size: 26px;
+  line-height: 1;
+}
+
+/* =========================================================
+   弹层里的专属零件
+   ========================================================= */
+
+/* 通关：顶部一条糖果渐变，24 徽章骑在卡片上沿 */
+.modal__card--win {
+  overflow: visible;
+  background: linear-gradient(180deg, #ffffff 0%, #f2fdf8 100%);
+  box-shadow: 0 30px 60px rgba(18, 49, 42, 0.3), 0 -6px 0 -1px var(--amber) inset;
+}
+
+.win-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  margin: -46px auto 10px;
+  border-radius: 50%;
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--ink);
+  background: linear-gradient(165deg, #fff3cf, var(--amber) 58%, #f0a71b);
+  box-shadow: 0 8px 0 #d1921a, 0 18px 34px rgba(240, 167, 27, 0.42);
+  animation: winBadge 1.4s ease-in-out infinite;
+}
+
+@keyframes winBadge {
+  0%, 100% { transform: translateY(0) rotate(-3deg) scale(1); }
+  50% { transform: translateY(-6px) rotate(3deg) scale(1.05); }
+}
+
+.modal__title--center {
+  text-align: center;
+}
+
+.win-stats {
+  margin: 4px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+/* 没凑到 24：只有结果，没有过程 */
+.lose-verdict {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  margin: 6px 0 20px;
+}
+
+.lose-num {
+  font-size: 58px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -1px;
+  color: var(--red);
+}
+
+.lose-neq {
+  padding: 7px 12px 6px;
+  border-radius: 999px;
+  background: #eaf7f1;
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--text-dim);
+}
+
+/* 解法列表 */
+.answer-list {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  animation: panelIn 0.24s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  gap: 8px;
 }
 
-@keyframes panelIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.panel__head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.chip {
-  min-width: 56px;
-  height: 56px;
-  padding: 0 10px;
+.answer-item {
+  padding: 11px 13px;
   border-radius: 14px;
-  background: #f2fbf7;
-  border: 1px solid #dbe7e1;
-  font-size: 24px;
-  font-weight: 500;
-  color: #123c31;
-  text-align: center;
-  line-height: 56px;
-}
-
-.panel__q {
-  font-size: 22px;
-  color: #6b8a80;
-}
-
-.panel__hint {
-  font-size: 13px;
-  color: #6b8a80;
-  margin-top: 14px;
-}
-
-.panel__title {
-  font-size: 20px;
-  font-weight: 500;
-  margin-bottom: 8px;
-}
-
-.panel__title.is-win {
-  color: #0b8f6d;
-}
-
-.panel__title.is-lose {
-  color: #b4553f;
-}
-
-.panel__expr {
-  font-size: 15px;
-  color: #6b8a80;
-  margin-bottom: 6px;
-}
-
-.panel__row {
-  display: flex;
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.opbtn {
-  width: 58px;
-  height: 58px;
-  border-radius: 16px;
-  background: #f2fbf7;
-  border: 1px solid #dbe7e1;
-  font-size: 26px;
-  font-weight: 500;
-  color: #123c31;
-  text-align: center;
-  line-height: 58px;
-}
-
-.opbtn:active {
-  background: #d9f2e7;
-}
-
-.panel__cancel {
-  margin-top: 16px;
-  font-size: 14px;
-  color: #6b8a80;
-}
-
-.btn {
-  padding: 12px 28px;
-  border-radius: 999px;
-  background: #0b8f6d;
-  color: #ffffff;
-  font-size: 15px;
-  text-align: center;
-}
-
-.btn--ghost {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text);
   background: #ffffff;
-  color: #0b8f6d;
-  border: 1px solid #0b8f6d;
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 0 rgba(18, 49, 42, 0.05);
 }
 
 /* ---------- 特效层 ---------- */
 
-/* 全屏画布，只负责画，不接事件 */
 .fx {
   position: fixed;
   left: 0;
@@ -295,16 +590,14 @@
   pointer-events: none;
 }
 
-/* 非法操作 / 死局时牌桌轻微震一下 */
+/* 非法操作 / 死局：整页轻微震一下 */
 .is-shaking {
-  animation: shake 0.42s ease-in-out;
+  animation: tableShake 0.42s ease-in-out;
 }
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  15% { transform: translateX(-5px); }
-  30% { transform: translateX(5px); }
-  45% { transform: translateX(-4px); }
-  60% { transform: translateX(4px); }
-  80% { transform: translateX(-2px); }
+@keyframes tableShake {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  20% { transform: translate3d(-4px, 2px, 0); }
+  45% { transform: translate3d(3px, -2px, 0); }
+  70% { transform: translate3d(-2px, 1px, 0); }
 }

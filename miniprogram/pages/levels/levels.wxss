@@ -1,181 +1,240 @@
 /* =========================================================
    levels.wxss —— 关卡地图
-   scroll-view 必须给确定高度才能滚动：flex:1 + height:0
+   一条横滑的档位药丸 + 一个可翻页的 5×4 格子盘
    ========================================================= */
 
-.page {
-  height: 100vh;
+/* 这一页要能整页滚动（小屏时格子盘放不下） */
+.shell--page {
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
+}
+
+.lvm {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  padding: 0 16px;
+  gap: 14rpx;
+  padding: 0 24rpx 28rpx;
+  padding-bottom: calc(28rpx + env(safe-area-inset-bottom));
 }
 
-/* ---------- 顶部进度 ---------- */
+/* ---------- 头部 ---------- */
 
-.head {
-  padding: 4px 4px 14px;
-}
-
-.head__title {
-  font-size: 26px;
-  font-weight: 500;
-  color: #123c31;
-  line-height: 1.2;
-}
-
-.head__sub {
-  font-size: 13px;
-  color: #6b8a80;
-  margin-top: 4px;
-}
-
-.bar {
-  height: 8px;
-  border-radius: 999px;
-  background: #d9ece3;
-  margin-top: 14px;
-  overflow: hidden;
-}
-
-.bar__fill {
-  height: 100%;
-  border-radius: 999px;
-  background: #0b8f6d;
-  transition: width 0.4s ease-out;
-}
-
-.head__stat {
-  font-size: 12px;
-  color: #6b8a80;
-  margin-top: 8px;
-}
-
-/* ---------- 档位列表 ---------- */
-
-.list {
-  flex: 1;
-  height: 0;
-}
-
-.tier {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 14px 14px 16px;
-  margin-bottom: 12px;
-  border: 1px solid #e6f0eb;
-}
-
-.tier__head {
+.lvm__head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 14rpx;
+  padding-top: 10rpx;
 }
 
-.tier__title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.lvm__title {
+  font-size: 40rpx;
+  font-weight: 900;
+  letter-spacing: 1rpx;
+  color: var(--text);
 }
 
-.tier__name {
-  font-size: 16px;
-  font-weight: 500;
-  color: #123c31;
+.lvm__prog {
+  margin-left: auto;
+  font-size: 26rpx;
+  font-weight: 900;
+  color: var(--coral-deep);
 }
 
-.tier__rule {
-  font-size: 11px;
-  color: #6b8a80;
-  background: #f2fbf7;
-  border: 1px solid #dbe7e1;
-  border-radius: 6px;
-  padding: 1px 6px;
-}
-
-.tier__done {
-  font-size: 12px;
-  color: #8ba79d;
-}
-
-.tier__done.is-full {
-  color: #0b8f6d;
-  font-weight: 500;
-}
-
-.tier__note {
-  font-size: 12px;
-  color: #8ba79d;
-  margin-top: 6px;
-  line-height: 1.5;
-}
-
-/* ---------- 关卡格子 ---------- */
-
-.grid {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 12px;
-}
-
-.cell {
-  width: calc((100% - 32px) / 5);
-  height: 46px;
-  border-radius: 10px;
-  margin-right: 8px;
-  margin-bottom: 8px;
+.lvm__close {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  font-size: 26rpx;
+  color: var(--text-dim);
+  background: linear-gradient(180deg, #ffffff, #f2fbf7);
+  border: 1px solid var(--line);
+  box-shadow: 0 3rpx 0 rgba(18, 49, 42, 0.08);
 }
 
-.cell:nth-child(5n) {
-  margin-right: 0;
+/* ---------- 总进度条 ---------- */
+
+.lvm__bar {
+  height: 12rpx;
+  border-radius: 99rpx;
+  background: #e4f1eb;
+  overflow: hidden;
 }
 
-.cell__n {
-  font-size: 15px;
-  font-weight: 500;
+.lvm__bar-in {
+  height: 100%;
+  border-radius: 99rpx;
+  background: linear-gradient(90deg, var(--mint-hi), var(--mint) 70%, #12bd8f);
+  transition: width 0.4s cubic-bezier(0.22, 1.4, 0.36, 1);
 }
 
-/* 已通关 */
-.cell--done {
-  background: #0b8f6d;
+/* ---------- 档位标签条 ---------- */
+
+.lvm__tabs {
+  width: 100%;
+  white-space: nowrap;
 }
 
-.cell--done .cell__n {
-  color: #ffffff;
+.lvm__tab {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rpx;
+  margin-right: 10rpx;
+  padding: 10rpx 20rpx 8rpx;
+  border-radius: 20rpx;
+  background: linear-gradient(180deg, #ffffff, #f3fbf7);
+  border: 1px solid var(--line);
+  box-shadow: 0 3rpx 0 rgba(18, 49, 42, 0.06);
 }
 
-/* 当前关：珊瑚描边 + 呼吸 */
-.cell--current {
-  background: #ffffff;
-  border: 1.5px solid #ff7a6b;
-  animation: breathe 1.6s ease-in-out infinite;
+.lvm__tab-name {
+  font-size: 23rpx;
+  font-weight: 900;
+  letter-spacing: 0.3rpx;
+  color: var(--text-dim);
 }
 
-.cell--current .cell__n {
-  color: #d33b2c;
+.lvm__tab-count {
+  font-size: 19rpx;
+  font-weight: 800;
+  color: var(--text-3);
 }
 
-@keyframes breathe {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.06); }
+.lvm__tab.is-active {
+  border-color: var(--amber-deep);
+  background: linear-gradient(180deg, var(--amber-hi), var(--amber));
+  box-shadow: 0 5rpx 0 var(--amber-deep);
 }
 
-/* 未解锁 */
-.cell--lock {
-  background: #f4f8f6;
+.lvm__tab.is-active .lvm__tab-name {
+  color: var(--ink);
 }
 
-.cell--lock .cell__n {
-  color: #b8ccc4;
+.lvm__tab.is-active .lvm__tab-count {
+  color: rgba(11, 42, 33, 0.72);
+}
+
+/* ---------- 档位页 ---------- */
+
+.lvm__pager {
+  height: 620rpx;
+}
+
+.lvm__page {
+  padding: 4rpx 2rpx 0;
+}
+
+.lvm__page-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12rpx;
+  padding: 0 2rpx 12rpx;
+}
+
+.lvm__page-name {
+  font-size: 25rpx;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.lvm__page-rule {
+  font-size: 21rpx;
+  color: var(--text-3);
+}
+
+.lvm__grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+/* 格子：白瓷小方块，三种状态 */
+.lvm__node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 116rpx;
+  border-radius: 18rpx;
+  font-size: 26rpx;
+  font-weight: 800;
+  color: var(--text);
+  background: linear-gradient(180deg, #ffffff, #f1faf6);
+  border: 1px solid var(--line-2);
+  transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.lvm__node:active {
+  transform: translateY(3rpx);
+}
+
+/* 已通关：薄荷底 */
+.lvm__node.is-done {
+  color: var(--mint-deep);
+  background: linear-gradient(180deg, #e9fff7, #ccf6e6);
+  border-color: rgba(23, 201, 154, 0.55);
+}
+
+/* 当前关：琥珀糖砖 + 呼吸 */
+.lvm__node.is-current {
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--amber-hi), var(--amber));
+  border-color: var(--amber-deep);
+  box-shadow: 0 4rpx 0 var(--amber-deep);
+  animation: nodePulse 1.8s ease-in-out infinite;
+}
+
+@keyframes nodePulse {
+  0%, 100% {
+    box-shadow: 0 4rpx 0 var(--amber-deep);
+  }
+  50% {
+    box-shadow: 0 4rpx 0 var(--amber-deep), 0 0 0 6rpx rgba(255, 194, 61, 0.28);
+  }
+}
+
+/* 锁定：褪色 */
+.lvm__node.is-lock {
+  opacity: 0.4;
 }
 
 /* ---------- 底部 ---------- */
 
-.foot {
+.lvm__foot {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.lvm__arrow {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 66rpx;
+  height: 66rpx;
+  border-radius: 20rpx;
+  font-size: 32rpx;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-dim);
+  background: linear-gradient(180deg, #ffffff, #f2fbf7);
+  border: 1px solid var(--line);
+  box-shadow: 0 3rpx 0 rgba(18, 49, 42, 0.08);
+}
+
+.lvm__arrow.is-off {
+  opacity: 0.35;
+}
+
+.lvm__note {
+  flex: 1;
   text-align: center;
-  font-size: 12px;
-  color: #a8c0b7;
-  padding: 8px 0 28px;
+  font-size: 21rpx;
+  color: var(--text-3);
 }
