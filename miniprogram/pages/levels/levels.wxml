@@ -2,13 +2,13 @@
   <view class="glow glow--a"></view>
   <view class="glow glow--b"></view>
 
-  <view class="lvm" style="padding-top:{{topPad}}px">
+  <view class="lvm" style="padding-top:{{statusBar}}px">
 
-    <!-- 头部：标题 + 总进度 + 关闭 -->
-    <view class="lvm__head">
+    <!-- 头部：返回 + 标题 + 总进度（右侧整段留给微信胶囊） -->
+    <view class="lvm__head" style="height:{{navH}}px;padding-right:{{capRight}}px">
+      <view class="lvm__back" hover-class="is-press" bindtap="back">‹</view>
       <text class="lvm__title">闯关</text>
       <text class="lvm__prog">{{cleared}} / {{total}}</text>
-      <view class="lvm__close" hover-class="is-press" bindtap="back">✕</view>
     </view>
 
     <view class="lvm__bar">

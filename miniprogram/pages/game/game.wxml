@@ -6,7 +6,7 @@
 
   <!-- ---------- 顶栏：招牌 + 工具 + 记分牌 ---------- -->
   <view class="topbar" style="padding-top:{{topPad}}px">
-    <view class="topbar__row">
+    <view class="topbar__row" style="padding-right:{{capRight}}px">
       <view class="logo" bindtap="goBack">
         <view class="logo__half logo__half--mint"><text class="logo__t">24</text></view>
         <view class="logo__half logo__half--warm"><text class="logo__t logo__t--w">Game</text></view>

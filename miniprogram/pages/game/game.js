@@ -8,6 +8,7 @@
    ========================================================= */
 const G24 = require('../../utils/g24.js');
 const Progress = require('../../utils/progress.js');
+const Nav = require('../../utils/nav.js');
 const Sfx = require('../../utils/sfx.js');
 const Fx = require('../../utils/fx.js');
 const { fmtTime } = require('../../utils/format.js');
@@ -21,7 +22,8 @@ const GAP = 12;          // 牌间距
 const RATIO = 1.42;      // 牌宽高比（H5 版一致）
 const TABLE_PAD = 14;    // 牌桌内边距
 const BOARD_PAD = 10;    // 棋盘内边距
-const TOPBAR_H = 102;    // 顶栏内容高度（不含状态栏）
+/* 顶栏内容高度：第一行 44 + 行间距 7 + 记分牌 38 + 底内边距 9 */
+const TOPBAR_H = 98;
 const DOCK_H = 84;       // 底部工具坞高度（不含安全区）
 
 const SUITS = ['♠', '♥', '♦', '♣'];
@@ -49,6 +51,7 @@ Page({
 
     /* 顶栏 / 坞 */
     topPad: 24,
+    capRight: 96,     // 顶栏右侧给微信胶囊让出的宽度
     bannerBottom: 110,
     soundOn: true,
     levelNo: 1,
@@ -76,14 +79,18 @@ Page({
      ========================================================= */
 
   onLoad(options) {
-    const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
-    const ww = info.windowWidth || 375;
-    const wh = info.windowHeight || 667;
-    const statusBar = info.statusBarHeight || 20;
-    const safeBottom = info.safeArea ? Math.max(0, wh - info.safeArea.bottom) : 0;
+    /* 状态栏 / 胶囊按钮的位置都自己算（开了 navigationStyle: custom） */
+    const nav = Nav.metrics();
+    const ww = nav.ww;
+    const wh = nav.wh;
+    const statusBar = nav.statusBar;
+    const safeBottom = nav.safeBottom;
+    /* 第一行（招牌 + 工具）和胶囊垂直居中对齐，右侧还要躲开胶囊 */
+    const topPad = Nav.topPad(44);
+    const topbarH = (topPad - statusBar) + TOPBAR_H;
 
     /* 牌能占多大：宽度够放两张、高度够放两行，取小的那个 */
-    const tableH = Math.max(280, wh - statusBar - TOPBAR_H - DOCK_H - safeBottom);
+    const tableH = Math.max(280, wh - topPad - topbarH - DOCK_H - safeBottom);
     const boardW = ww - TABLE_PAD * 2;
     const boardH = tableH - TABLE_PAD * 2;
     const availW = boardW - BOARD_PAD * 2 - GAP;
@@ -99,7 +106,7 @@ Page({
     this.history = [];
     this.selIndex = -1;
     /* 牌桌在屏幕上的位置：先按常量估一个，onReady 再量准 */
-    this.boardRect = { left: TABLE_PAD, top: statusBar + TOPBAR_H + TABLE_PAD };
+    this.boardRect = { left: TABLE_PAD, top: topPad + topbarH + TABLE_PAD };
 
     this.setData({
       ww,
@@ -113,7 +120,9 @@ Page({
       fsS: Math.max(10, Math.round(cardW * 0.115)),
       padX: Math.max(7, Math.round(cardW * 0.077)),
       padY: Math.max(6, Math.round(cardW * 0.068)),
-      topPad: statusBar + 8,
+      topPad,
+      /* 顶栏右侧要给胶囊让出的宽度 */
+      capRight: nav.capRight,
       bannerBottom: DOCK_H + safeBottom + 16,
       soundOn: Sfx.enabled !== false,
     });

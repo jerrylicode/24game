@@ -38,8 +38,17 @@ let lastPage = null;
 let toast = '';
 let navTo = '';
 
+/* 微信右上角胶囊：375 宽屏幕上的典型位置（iPhone 13） */
+let capsule = { left: 281, right: 368, top: 51, bottom: 83, width: 87, height: 32 };
+let capsuleMode = 'ok'; // ok | zero | throw
+
 global.wx = {
   getWindowInfo: () => ({ windowWidth: 375, windowHeight: 812, statusBarHeight: 44 }),
+  getMenuButtonBoundingClientRect: () => {
+    if (capsuleMode === 'throw') throw new Error('boom');
+    if (capsuleMode === 'zero') return { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
+    return capsule;
+  },
   getStorageSync: (k) => (k in store ? store[k] : ''),
   setStorageSync: (k, v) => { store[k] = v; },
   vibrateShort: () => {},
@@ -70,6 +79,7 @@ const G24 = require(path.join(ROOT, 'utils/g24.js'));
 const Progress = require(path.join(ROOT, 'utils/progress.js'));
 const Sfx = require(path.join(ROOT, 'utils/sfx.js'));
 const Fx = require(path.join(ROOT, 'utils/fx.js'));
+const Nav = require(path.join(ROOT, 'utils/nav.js'));
 const { fmtTime } = require(path.join(ROOT, 'utils/format.js'));
 
 /* =========================================================
@@ -198,6 +208,48 @@ lvPage.onLoad();
 ok(lvPage.data.cleared === 300 && lvPage.data.pct === 100, '全通关时进度 100%');
 ok(lvPage.data.tiers[14].levels[19].state === 'done', '最后一关变成已通关');
 ok(lvPage.data.tiers.every((t) => t.done === 20), '所有档位都满格');
+
+/* =========================================================
+   3.5 自定义导航栏适配：别和右上角胶囊撞上
+   ========================================================= */
+section('导航栏与胶囊适配');
+
+capsuleMode = 'ok';
+let nav = Nav.metrics();
+ok(nav.statusBar === 44, '读到状态栏高度', nav.statusBar);
+ok(nav.navH === 46, '导航条高度 = 上留白×2 + 胶囊高', nav.navH);
+ok(nav.capRight === 94, '胶囊占掉右侧 94px', nav.capRight);
+ok(Nav.topPad(44) === 45, '第一行内容与胶囊垂直居中', Nav.topPad(44));
+ok(Nav.topPad(38) === 48, '矮一点的行会多留上边距', Nav.topPad(38));
+
+/* 关卡地图：标题行右端必须停在胶囊左边 */
+lvPage = loadPage('pages/levels/levels.js');
+lvPage.onLoad();
+ok(lvPage.data.statusBar === 44 && lvPage.data.navH === 46, '地图页拿到导航条尺寸',
+  lvPage.data.statusBar + '/' + lvPage.data.navH);
+ok(lvPage.data.capRight === 94, '地图页拿到胶囊宽度', lvPage.data.capRight);
+ok(lvPage.data.navH >= capsule.height, '导航条不矮于胶囊');
+const lvHeadRight = 375 - 12 - lvPage.data.capRight; // 页面左右各 24rpx ≈ 12px
+ok(lvHeadRight < capsule.left, '标题行右端落在胶囊左边', lvHeadRight + ' < ' + capsule.left);
+ok(lvHeadRight >= 375 / 2, '右侧留白没把内容挤到左半屏', lvHeadRight);
+
+/* 游戏页：招牌 + 音效/分享/说明 这一行同样要躲开 */
+const gpage = loadPage('pages/game/game.js');
+gpage.onLoad({ level: '0' });
+ok(gpage.data.capRight === 94, '游戏页顶栏给胶囊留了宽度', gpage.data.capRight);
+ok(gpage.data.topPad === 45, '游戏页顶栏从状态栏下沿起', gpage.data.topPad);
+const gToolsRight = 375 - 12 - gpage.data.capRight;
+ok(gToolsRight < capsule.left, '顶栏工具右端落在胶囊左边', gToolsRight + ' < ' + capsule.left);
+ok(gpage.data.cardW >= 100, '躲开胶囊后牌没被挤小', gpage.data.cardW);
+
+/* 拿不到胶囊数据时不能崩，也不能把按钮压到胶囊底下 */
+capsuleMode = 'zero';
+nav = Nav.metrics();
+ok(nav.navH === 44 && nav.capRight === 96, '胶囊返回 0 时用兜底值', nav.navH + '/' + nav.capRight);
+capsuleMode = 'throw';
+nav = Nav.metrics();
+ok(nav.navH === 44 && nav.capRight === 96, '胶囊接口抛错也不崩，走兜底');
+capsuleMode = 'ok';
 
 /* =========================================================
    4. 游戏页

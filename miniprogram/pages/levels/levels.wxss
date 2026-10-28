@@ -13,6 +13,7 @@
 .lvm {
   position: relative;
   z-index: 1;
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 14rpx;
@@ -20,13 +21,32 @@
   padding-bottom: calc(28rpx + env(safe-area-inset-bottom));
 }
 
-/* ---------- 头部 ---------- */
+/* ---------- 头部（就是自绘的导航条） ---------- */
 
 .lvm__head {
   display: flex;
   align-items: center;
   gap: 14rpx;
-  padding-top: 10rpx;
+  /* 高度由 navH 内联给（和微信胶囊同高，内容自然居中） */
+}
+
+/* 返回：左侧，别和右上角胶囊挤在一起 */
+.lvm__back {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 18rpx;
+  font-size: 34rpx;
+  font-weight: 700;
+  line-height: 1;
+  padding-bottom: 4rpx;
+  color: var(--text-dim);
+  background: linear-gradient(180deg, #ffffff, #f2fbf7);
+  border: 1px solid var(--line);
+  box-shadow: 0 3rpx 0 rgba(18, 49, 42, 0.08);
 }
 
 .lvm__title {
@@ -41,20 +61,6 @@
   font-size: 26rpx;
   font-weight: 900;
   color: var(--coral-deep);
-}
-
-.lvm__close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 60rpx;
-  height: 60rpx;
-  border-radius: 50%;
-  font-size: 26rpx;
-  color: var(--text-dim);
-  background: linear-gradient(180deg, #ffffff, #f2fbf7);
-  border: 1px solid var(--line);
-  box-shadow: 0 3rpx 0 rgba(18, 49, 42, 0.08);
 }
 
 /* ---------- 总进度条 ---------- */
@@ -122,12 +128,19 @@
 
 /* ---------- 档位页 ---------- */
 
+/* 格子盘吃掉中间剩下的高度；盘里的「档位名 + 20 个格子」整体居中 */
 .lvm__pager {
-  height: 620rpx;
+  flex: 1;
+  min-height: 600rpx;
 }
 
 .lvm__page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
   padding: 4rpx 2rpx 0;
+  box-sizing: border-box;
 }
 
 .lvm__page-head {

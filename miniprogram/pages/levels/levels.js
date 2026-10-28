@@ -6,6 +6,7 @@
    ========================================================= */
 const G24 = require('../../utils/g24.js');
 const Progress = require('../../utils/progress.js');
+const Nav = require('../../utils/nav.js');
 
 const LEVELS = G24.LEVELS;
 const PER = LEVELS.perTier;
@@ -18,12 +19,15 @@ Page({
     cleared: 0,
     total: TOTAL,
     pct: 0,
-    topPad: 20,
+    /* 自定义导航栏：状态栏高度 / 导航条高度 / 胶囊占掉的右侧宽度 */
+    statusBar: 20,
+    navH: 44,
+    capRight: 96,
   },
 
   onLoad() {
-    const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
-    this.setData({ topPad: (info.statusBarHeight || 20) + 8 });
+    const m = Nav.metrics();
+    this.setData({ statusBar: m.statusBar, navH: m.navH, capRight: m.capRight });
     this.build();
   },
 
